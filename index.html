@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Michael Christianto — Portfolio (Playful)</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --ink:#1E1433; --cream:#FFFBF2; --muted:#4A3F5C;
+    --coral:#FF6B6B; --butter:#FFD23F; --mint:#3DDC97; --sky:#4DA8FF; --lilac:#A77BFF; --pink:#FF8FC7;
+    --display:'Fredoka',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:auto}
+  body{margin:0;font-family:'Figtree',system-ui,sans-serif;color:var(--ink);background:#FFF3B8;overflow-x:hidden}
+  a{color:inherit}
+  h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.01em;font-weight:700}
+
+  /* Layers: three.js world → rooms (DOM) → Spline mascot → speech bubble / UI */
+  #world{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block}
+  #track{position:fixed;top:0;left:0;height:100vh;display:flex;z-index:1;will-change:transform}
+  #mascot{position:fixed;inset:0;width:100vw!important;height:100vh!important;z-index:5;pointer-events:none;display:block}
+  #spacer{height:620vh}   /* vertical scroll length that drives the sideways journey */
+
+  /* Sticker language: thick ink outline + hard offset shadow + a little tilt */
+  .sticker{background:var(--cream);border:3px solid var(--ink);border-radius:26px;box-shadow:6px 6px 0 var(--ink);transform:rotate(var(--r,0deg));transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s}
+  a.sticker,button.sticker{text-decoration:none;cursor:pointer}
+  a.sticker:hover,button.sticker:hover{transform:rotate(calc(var(--r,0deg) * -1)) translate(-3px,-3px);box-shadow:9px 9px 0 var(--ink)}
+  .label{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border:3px solid var(--ink);border-radius:999px;font-family:var(--display);font-weight:600;font-size:16px;box-shadow:3px 3px 0 var(--ink)}
+  .btn{display:inline-flex;align-items:center;gap:10px;height:54px;padding:0 24px;border:3px solid var(--ink);border-radius:999px;font-family:var(--display);font-weight:600;font-size:18px;text-decoration:none;box-shadow:4px 4px 0 var(--ink);transition:transform .2s,box-shadow .2s;cursor:pointer;background:var(--cream);color:var(--ink)}
+  .btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+  .btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+  .btn-ink{background:var(--ink);color:var(--cream);box-shadow:4px 4px 0 var(--coral)}
+  .btn-ink:hover{box-shadow:6px 6px 0 var(--coral)}
+
+  /* Header */
+  header{position:fixed;top:18px;left:0;right:0;z-index:10;display:flex;justify-content:space-between;align-items:center;padding-inline:clamp(16px,4vw,56px);pointer-events:none}
+  header > *{pointer-events:auto}
+  .logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--display);font-weight:700;font-size:18px;background:var(--cream);border:3px solid var(--ink);border-radius:999px;padding:6px 16px 6px 6px;box-shadow:3px 3px 0 var(--ink)}
+  .logo span:first-child{width:36px;height:36px;border-radius:50%;background:var(--coral);color:var(--cream);display:grid;place-items:center;font-size:15px;border:2px solid var(--ink)}
+  header nav{display:flex;gap:10px}
+  header nav .btn{height:46px;font-size:16px;padding:0 18px}
+
+  /* Rooms */
+  .room{position:relative;width:100vw;height:100vh;flex:none;padding:112px clamp(16px,5vw,72px) 0}
+  .pos{position:absolute}
+  .h-huge{font-size:clamp(56px,8.6vw,136px);line-height:.92;text-align:center;text-shadow:7px 7px 0 var(--coral)}
+  .h-room{font-size:clamp(34px,4vw,58px);line-height:1}
+  /* sticker-cut outline so headings stay legible over the toys */
+  .h-huge,.h-room{-webkit-text-stroke:10px var(--cream);paint-order:stroke fill}
+  .card-pad{padding:24px}
+  .muted{color:var(--muted)}
+  .ph{display:grid;place-items:center;font-weight:700;font-family:var(--display);color:var(--muted);border:3px dashed rgba(30,20,51,.35);border-radius:18px}
+  .tag{display:inline-block;padding:4px 12px;border:2px solid var(--ink);border-radius:999px;font-weight:600;font-size:13px;margin-right:6px}
+  .num{font-family:var(--display);font-weight:700;font-size:44px;line-height:1}
+  .polaroid{background:#fff;padding:16px 16px 56px;border:3px solid var(--ink);box-shadow:6px 6px 0 var(--ink);border-radius:6px}
+  .polaroid::before{content:"";position:absolute;top:-16px;left:50%;width:120px;height:32px;transform:translateX(-50%) rotate(-4deg);background:rgba(255,210,63,.75);border:2px solid rgba(30,20,51,.25)}
+  .polaroid figcaption{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-family:var(--display);font-weight:600;font-size:18px}
+  .arrow-hint{font-family:var(--display);font-weight:600;font-size:18px;display:flex;align-items:center;gap:10px}
+  .arrow-hint svg{animation:nudge 1.2s ease-in-out infinite}
+  @keyframes nudge{50%{transform:translateX(8px)}}
+
+  /* Pop-in when Molang arrives in a room */
+  .room [data-pop]{opacity:0;transform:translateY(40px) scale(.6) rotate(calc(var(--r,0deg) - 10deg));transition:opacity .25s,transform .35s}
+  .room.active [data-pop]{animation:pop .75s cubic-bezier(.34,1.56,.64,1) forwards;animation-delay:var(--d,0s)}
+  @keyframes pop{to{opacity:1;transform:translateY(0) scale(1) rotate(var(--r,0deg))}}
+
+  /* Speech bubble that follows Molang */
+  #bubble{position:fixed;left:0;top:0;z-index:7;max-width:230px;padding:12px 16px;background:#fff;border:3px solid var(--ink);border-radius:20px;box-shadow:4px 4px 0 var(--ink);font-family:var(--display);font-weight:600;font-size:17px;line-height:1.25;pointer-events:none;will-change:transform,opacity}
+  #bubble::after{content:"";position:absolute;left:var(--tail,28px);bottom:-14px;width:18px;height:18px;background:#fff;border-right:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:rotate(45deg) skew(8deg,8deg)}
+  #bubble.say{animation:say .5s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes say{from{scale:.4}to{scale:1}}
+
+  /* Journey progress */
+  #progress{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:10;display:flex;align-items:center;gap:6px;background:var(--cream);border:3px solid var(--ink);border-radius:999px;padding:6px;box-shadow:3px 3px 0 var(--ink)}
+  #progress button{all:unset;cursor:pointer;font-family:var(--display);font-weight:600;font-size:14px;padding:8px 14px;border-radius:999px;min-height:28px;display:flex;align-items:center}
+  #progress button[aria-current="true"]{background:var(--ink);color:var(--cream)}
+  #progress button:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+
+  /* ---------- Phones, small tablets, short screens: rooms stack vertically ---------- */
+  .m-space{display:none}
+  .stack #track{position:relative;flex-direction:column;transform:none!important}
+  .stack #spacer{display:none}
+  .stack .room{height:auto;min-height:100svh;padding:96px 18px 150px;display:flex;flex-direction:column}
+  .stack .room .pos{position:relative;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:auto!important;height:auto!important;margin-top:18px}
+  .stack .m-space{display:block;height:38svh;flex:none}
+  .stack .h-huge{font-size:clamp(44px,13vw,80px);text-shadow:4px 4px 0 var(--coral)}
+  .stack #contact .h-huge{text-shadow:4px 4px 0 var(--lilac)}
+  .stack .h-room{font-size:clamp(32px,9vw,44px)}
+  .stack .ph{min-height:170px;flex:none!important}
+  .stack .polaroid .ph{min-height:300px}
+  .stack .polaroid{align-self:center;width:min(320px,86vw)!important}
+  .stack #bubble{display:none}
+  .stack header{top:0;padding-block:10px;background:rgba(255,251,242,.78);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:3px solid var(--ink)}
+  .stack .room > .pos.muted{margin-top:auto;padding-top:24px}
+  @media (max-width:899px){ header nav .btn:not(.btn-ink){display:none} }
+  @media (max-width:420px){
+    .logo span:last-child{display:none}
+    .logo{padding:6px}
+    #progress{gap:2px;padding:4px}
+    #progress button{padding:8px 9px;font-size:12px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .room [data-pop],.room.active [data-pop]{animation:none;opacity:1;transform:rotate(var(--r,0deg))}
+    .arrow-hint svg{animation:none}
+  }
+</style>
+</head>
+<body>
+<canvas id="world" aria-hidden="true"></canvas>
+<canvas id="mascot" aria-label="Interactive 3D character"></canvas>
+<div id="bubble" role="status" aria-live="polite"></div>
+
+<header>
+  <a class="logo" href="#" data-go="0"><span>MC</span><span>Michael Christianto</span></a>
+  <nav>
+    <a class="btn" href="#" data-go="1">Work</a>
+    <a class="btn" href="#" data-go="3">About</a>
+    <a class="btn btn-ink" href="#" data-go="4">Let's talk</a>
+  </nav>
+</header>
+
+<div id="track">
+  <!-- 0 · HELLO -->
+  <section class="room" id="hello" data-say="Hi! Scroll and I'll show you around →">
+    <h1 class="h-huge" data-pop>Hi, I'm Michael.</h1>
+    <div class="m-space" aria-hidden="true"></div>
+    <div class="pos sticker card-pad m-stack" data-pop style="--r:-3deg;--d:.15s;left:5vw;bottom:14vh;width:min(360px,30vw)">
+      <span class="label" style="background:var(--butter)">Product Designer</span>
+      <p style="font-size:18px;line-height:1.5;margin:14px 0 18px">I design and build operational tools that people use all day — and make them feel friendly without losing precision.</p>
+      <a class="btn btn-ink" href="#" data-go="1">See my work →</a>
+    </div>
+    <div class="pos arrow-hint sticker card-pad m-stack" data-pop style="--r:4deg;--d:.3s;right:6vw;bottom:18vh;background:var(--mint)">
+      Scroll to travel
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </div>
+  </section>
+
+  <!-- 1 · WORK -->
+  <section class="room" id="work" data-say="Ooh — Heron is the big one.">
+    <div data-pop style="--r:-2deg"><span class="label" style="background:var(--mint)">Selected work</span></div>
+    <h2 class="h-room" data-pop style="--d:.08s;margin-top:12px">Things I've shipped</h2>
+    <a class="pos sticker m-stack" href="case/heron.html" data-pop style="--r:-2deg;--d:.15s;left:5vw;top:30vh;width:34vw;height:54vh;display:flex;flex-direction:column;overflow:hidden">
+      <div class="ph" style="flex:1;margin:14px;background:rgba(255,210,63,.35)">[HERON SCREENSHOT]</div>
+      <div style="padding:0 22px 22px">
+        <span class="tag" style="background:var(--butter)">Enterprise</span><span class="tag">Design + Build</span>
+        <h3 style="font-size:36px;margin:10px 0 6px">Heron WMS <span style="font-size:20px">→</span></h3>
+        <p class="muted" style="margin:0;font-size:16px;line-height:1.5">An internal warehouse management system — modules across the full operational lifecycle, inbound to outbound.</p>
+      </div>
+    </a>
+    <a class="pos sticker card-pad m-stack" href="case/project-2.html" data-pop style="--r:3deg;--d:.25s;right:5vw;top:24vh;width:30vw;background:#FFE3F1">
+      <div class="ph" style="height:15vh">[PROJECT IMAGE]</div>
+      <h3 style="font-size:24px;margin-top:12px">[PROJECT TITLE]</h3>
+      <p class="muted" style="margin:4px 0 0">[One line: problem, your role, outcome]</p>
+    </a>
+    <a class="pos sticker card-pad m-stack" href="case/project-3.html" data-pop style="--r:-2.5deg;--d:.35s;right:7vw;top:58vh;width:28vw;background:#E4F1FF">
+      <div class="ph" style="height:11vh">[PROJECT IMAGE]</div>
+      <h3 style="font-size:24px;margin-top:12px">[PROJECT TITLE]</h3>
+    </a>
+  </section>
+
+  <!-- 2 · PROCESS -->
+  <section class="room" id="process" data-say="Three steps. Step one is the fun one.">
+    <div data-pop style="--r:2deg"><span class="label" style="background:var(--sky);color:var(--ink)">Process</span></div>
+    <h2 class="h-room" data-pop style="--d:.08s;margin-top:12px">From floor to pixel</h2>
+    <div class="pos sticker card-pad m-stack" data-pop style="--r:-4deg;--d:.15s;left:5vw;top:46vh;width:27vw;background:#FFF1C2">
+      <div class="num" style="color:var(--coral)">01</div>
+      <h3 style="font-size:24px;margin:8px 0">Go where the work happens</h3>
+      <p class="muted" style="margin:0;line-height:1.5">Watch operators at their stations before drawing a single screen. The real flow is rarely the documented one.</p>
+    </div>
+    <div class="pos sticker card-pad m-stack" data-pop style="--r:2deg;--d:.28s;left:37vw;top:27vh;width:26vw;background:#DFFBEF">
+      <div class="num" style="color:#169C66">02</div>
+      <h3 style="font-size:24px;margin:8px 0">Design the whole lifecycle</h3>
+      <p class="muted" style="margin:0;line-height:1.5">A module never lives alone. I map how each step hands off to the next so nothing breaks between screens.</p>
+    </div>
+    <div class="pos sticker card-pad m-stack" data-pop style="--r:5deg;--d:.41s;right:5vw;top:44vh;width:27vw;background:#EFE6FF">
+      <div class="num" style="color:#6B3FD6">03</div>
+      <h3 style="font-size:24px;margin:8px 0">Build it, then write it down</h3>
+      <p class="muted" style="margin:0;line-height:1.5">I prototype in code and ship guidebooks alongside features, so teams can actually adopt what we make.</p>
+    </div>
+  </section>
+
+  <!-- 3 · ABOUT -->
+  <section class="room" id="about" data-say="That's the human. He's nice.">
+    <figure class="pos polaroid m-stack" data-pop style="--r:-5deg;--d:.1s;left:8vw;top:20vh;width:25vw;height:60vh;margin:0">
+      <div class="ph" style="height:100%;background:rgba(61,220,151,.18)">[YOUR PHOTO]</div>
+      <figcaption>[PHOTO CAPTION]</figcaption>
+    </figure>
+    <div class="pos sticker card-pad m-stack" data-pop style="--r:2deg;--d:.25s;right:6vw;top:20vh;width:33vw">
+      <span class="label" style="background:var(--lilac);color:var(--ink)">About</span>
+      <h2 class="h-room" style="margin:14px 0 12px">The human behind the tools.</h2>
+      <p class="muted" style="font-size:17px;line-height:1.55;margin:0 0 18px">Product Designer at Sobat Bisnis Group, placed at Paragon Technology &amp; Innovation. [Add a line about what drives you, and something you do outside work.]</p>
+      <a class="btn" href="https://drive.google.com/file/d/1l_kRScQsm5MerBtPpweXRXTKqoEeShX1/view?usp=drive_link" target="_blank" rel="noopener noreferrer" style="background:var(--butter)">Download CV →</a>
+    </div>
+  </section>
+
+  <!-- 4 · CONTACT -->
+  <section class="room" id="contact" data-say="Go on, say hi!">
+    <h2 class="h-huge" data-pop style="font-size:clamp(48px,7vw,112px);text-shadow:6px 6px 0 var(--lilac)">Let's make something fun.</h2>
+    <a class="pos sticker card-pad m-stack" href="mailto:michael.christianto.job@gmail.com" data-pop style="--r:-3deg;--d:.15s;left:7vw;bottom:20vh;width:min(320px,28vw);background:var(--butter)">
+      <div style="font-family:var(--display);font-weight:700;font-size:28px">Email me →</div>
+      <div class="muted" style="margin-top:6px;overflow-wrap:anywhere">michael.christianto.job@gmail.com</div>
+    </a>
+    <div class="pos sticker card-pad m-stack" data-pop style="--r:3deg;--d:.28s;right:7vw;bottom:20vh;width:min(320px,28vw)">
+      <div style="font-family:var(--display);font-weight:700;font-size:22px;margin-bottom:12px">Find me around</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a class="btn" href="https://www.linkedin.com/in/michael-christiantoo/" target="_blank" rel="noopener noreferrer" style="height:44px;font-size:15px;background:#E4F1FF">LinkedIn</a>
+        <a class="btn" href="https://www.behance.net/michaelchristianto" target="_blank" rel="noopener noreferrer" style="height:44px;font-size:15px;background:#FFE3F1">Behance</a>
+        <a class="btn" href="https://drive.google.com/file/d/1l_kRScQsm5MerBtPpweXRXTKqoEeShX1/view?usp=drive_link" target="_blank" rel="noopener noreferrer" style="height:44px;font-size:15px;background:#DFFBEF">Read.cv</a>
+      </div>
+    </div>
+    <div class="pos muted" style="left:0;right:0;bottom:84px;text-align:center;font-size:14px">© 2026 Michael Christianto</div>
+  </section>
+</div>
+
+<nav id="progress" aria-label="Sections">
+  <button data-go="0">Hi</button><button data-go="1">Work</button><button data-go="2">Process</button><button data-go="3">About</button><button data-go="4">Contact</button>
+</nav>
+<div id="spacer"></div>
+
+<!-- Journey: vertical scroll → sideways travel between rooms (shared by the 3D layers) -->
+<script>
+  window.J = (() => {
+    const track = document.getElementById('track'), rooms = [...track.children], N = rooms.length;
+    const stops = [...document.querySelectorAll('#progress button')];
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const J = { N, rooms, pos: 0, vel: 0, room: 0, stack: false };
+    // Stack mode = phones / small tablets / short screens: normal vertical page, rooms one under another
+    const mq = matchMedia('(max-width: 899px), (max-height: 599px)');
+    const setMode = () => { J.stack = mq.matches; document.documentElement.classList.toggle('stack', J.stack); };
+    setMode(); mq.addEventListener('change', setMode);
+    const smooth = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+    const maxScroll = () => Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    function target() {
+      if (J.stack) {        // which room is at the middle of the screen, and how far into it
+        const mid = scrollY + innerHeight * .5;
+        let k = 0; while (k < N - 1 && rooms[k + 1].offsetTop <= mid) k++;
+        const fr = (mid - rooms[k].offsetTop) / Math.max(1, rooms[k].offsetHeight);
+        return Math.min(N - 1, k + (k < N - 1 ? smooth(.62, 1, fr) : 0));
+      }
+      // journey mode: dwell a little at each room, then glide to the next
+      const u = Math.min(N - 1, Math.max(0, scrollY / maxScroll() * (N - 1)));
+      const r = Math.min(N - 2, Math.floor(u));
+      return r + smooth(.18, .82, u - r);
+    }
+    // deep links from case pages (index.html#work) land directly in that room
+    function fromHash() {
+      const k = rooms.findIndex(r => '#' + r.id === location.hash);
+      if (k < 0) return;
+      scrollTo({ top: J.stack ? rooms[k].offsetTop : k / (N - 1) * maxScroll(), behavior: 'auto' });
+      J.jump = true;
+    }
+    addEventListener('load', fromHash); addEventListener('hashchange', fromHash);
+    J.go = k => scrollTo({ top: J.stack ? rooms[k].offsetTop : k / (N - 1) * maxScroll(), behavior: reduce ? 'auto' : 'smooth' });
+    document.querySelectorAll('[data-go]').forEach(el => el.addEventListener('click', e => { e.preventDefault(); J.go(+el.dataset.go); }));
+    let last = performance.now();
+    (function loop(now) {
+      const dt = Math.min(.05, (now - last) / 1000) || .016; last = now;
+      const prev = J.pos, t = target();
+      J.pos = reduce || J.jump || Math.abs(t - J.pos) < .0005 ? t : J.pos + (t - J.pos) * (1 - Math.pow(.002, dt));   // snap when settled
+      J.vel = J.jump ? 0 : (J.pos - prev) / dt; J.jump = false;                                   // rooms per second
+      const tf = J.stack ? '' : `translate3d(${Math.round(-J.pos * innerWidth)}px,0,0)`;
+      if (tf !== track.style.transform) track.style.transform = tf;          // only touch the DOM when it moves
+      const room = Math.round(J.pos);
+      if (room !== J.room) { J.room = room; dispatchEvent(new CustomEvent('room', { detail: room })); }
+      rooms.forEach((r, k) => r.classList.toggle('active', Math.abs(J.pos - k) < .6));
+      stops.forEach((s, k) => s.setAttribute('aria-current', k === room));
+      requestAnimationFrame(loop);
+    })(last);
+    return J;
+  })();
+</script>
+
+<!-- three.js: a candy toy world that parallax-scrolls sideways, pops and throws confetti on arrival -->
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+const J = window.J, N = J.N;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const canvas = document.getElementById('world');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+renderer.autoClear = false;
+
+const SKY = [['#FFE66D', '#FFF8D6'], ['#8FF0C8', '#E6FFF4'], ['#9AD1FF', '#E8F5FF'], ['#CDB6FF', '#F4EEFF'], ['#FFA69E', '#FFEDE8']]
+  .map(p => p.map(c => new THREE.Color(c)));
+const GROUND = ['#FFB443', '#2FCB88', '#3D9BFF', '#9A6BFF', '#FF6B6B'].map(c => new THREE.Color(c));
+const INK = new THREE.Color('#1E1433');
+const CANDY = ['#FF6B6B', '#FFD23F', '#3DDC97', '#4DA8FF', '#A77BFF', '#FF8FC7', '#FFFFFF'];
+
+/* Sky: vertical gradient + drifting polka dots */
+const skyScene = new THREE.Scene(), skyCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const SU = { uTop: { value: SKY[0][0].clone() }, uBot: { value: SKY[0][1].clone() }, uOff: { value: 0 }, uTime: { value: 0 } };
+skyScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
+  uniforms: SU, depthWrite: false,
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }`,
+  fragmentShader: `precision highp float; varying vec2 vUv; uniform vec3 uTop, uBot; uniform float uOff, uTime;
+    void main(){
+      vec3 col = mix(uBot, uTop, smoothstep(.1, 1., vUv.y));
+      vec2 p = (gl_FragCoord.xy + vec2(uOff, uTime*6.)) / 46.;
+      p.x += step(1., mod(floor(p.y), 2.)) * .5;                 // staggered rows
+      float d = length(fract(p) - .5);
+      col = mix(col, vec3(1.), smoothstep(.14, .11, d) * .28);
+      gl_FragColor = vec4(col, 1.);
+    }`
+})));
+
+/* World */
+const scene = new THREE.Scene();
+const cam = new THREE.PerspectiveCamera(40, 1, .1, 200); cam.position.z = 12;
+scene.add(new THREE.AmbientLight(0xffffff, 1.1));
+const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(-4, 8, 10); scene.add(sun);
+
+const grad = new THREE.DataTexture(new Uint8Array([90, 170, 255]), 3, 1, THREE.RedFormat);
+grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
+const outlineMat = new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide });
+
+const visH = z => 2 * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) * (cam.position.z - z);
+let ROOM = 1;                       // world width of one room at z = 0 (so z = 0 moves 1:1 with the DOM)
+
+// Wavy ground bands (near ground at z=0 where Molang stands, far hills behind for parallax)
+const bands = [];
+function makeBand(z, screenY, amp, freq, colorFn, outline) {
+  const group = new THREE.Group(); group.position.z = z; scene.add(group);
+  bands.push({ group, z, screenY, amp, freq, colorFn, outline }); return group;
+}
+function buildBands() {
+  for (const b of bands) {
+    b.group.clear();
+    const h = visH(b.z), w = h * cam.aspect;
+    const yTop = (.5 - b.screenY) * h, x0 = -w, x1 = (N - 1) * ROOM * (cam.position.z - b.z) / cam.position.z + w * 2;
+    const shape = (lift) => {
+      const s = new THREE.Shape(); s.moveTo(x0, yTop - h);
+      for (let x = x0; x <= x1; x += w / 80) s.lineTo(x, yTop + lift + Math.sin(x * b.freq) * b.amp + Math.sin(x * b.freq * 2.3 + 1) * b.amp * .4);
+      s.lineTo(x1, yTop - h); return new THREE.ShapeGeometry(s);
+    };
+    const mat = new THREE.MeshBasicMaterial({ color: b.colorFn(0) }); b.mat = mat;
+    if (b.outline) { const o = new THREE.Mesh(shape(h * .006), outlineMat); o.position.z = -.001; b.group.add(o); }
+    b.group.add(new THREE.Mesh(shape(0), mat));
+  }
+}
+const groundCol = new THREE.Color(), hillCol = new THREE.Color();
+makeBand(-9, .66, .5, .45, () => hillCol, false);
+makeBand(0, .86, .12, 1.1, () => groundCol, true);
+
+// Toy shapes — 7 per room, at different depths so they parallax
+const geos = [
+  new THREE.TorusGeometry(.55, .24, 20, 40), new THREE.SphereGeometry(.6, 32, 20), new THREE.CapsuleGeometry(.32, .7, 8, 20),
+  new THREE.ConeGeometry(.5, 1.1, 28), new THREE.IcosahedronGeometry(.62, 0), new THREE.TorusKnotGeometry(.4, .14, 80, 12),
+  new THREE.BoxGeometry(.8, .8, .8),
+];
+const toys = [];
+const rand = s => { const x = Math.sin(s * 127.1) * 43758.5453; return x - Math.floor(x); };
+for (let r = 0; r < N; r++) for (let k = 0; k < 7; k++) {
+  const g = geos[(r * 3 + k) % geos.length];
+  const mesh = new THREE.Mesh(g, new THREE.MeshToonMaterial({ color: CANDY[(r + k * 2) % CANDY.length], gradientMap: grad }));
+  const line = new THREE.Mesh(g, outlineMat); line.scale.setScalar(1.08); mesh.add(line);
+  const s = rand(r * 17 + k), z = -2 - rand(r * 5 + k * 3) * 9;
+  mesh.userData = { room: r, k, s, z, base: .55 + rand(r * 11 + k * 7) * .9, pop: 1, spin: (rand(k + r) - .5) * 1.4, u: rand(r * 3 + k * 13), v: rand(r * 19 + k) };
+  scene.add(mesh); toys.push(mesh);
+}
+function placeToys() {
+  for (const m of toys) {
+    const u = m.userData, h = visH(u.z), w = h * cam.aspect, par = (cam.position.z - u.z) / cam.position.z;
+    const side = u.k % 2 ? 1 : -1;                                        // keep them toward the edges
+    m.userData.x = u.room * ROOM * par + side * (w * .18 + u.u * w * .3);
+    m.userData.y = (-.05 + u.v * .5) * h;
+    m.position.set(m.userData.x, m.userData.y, u.z);
+  }
+}
+
+// Confetti burst from Molang when he arrives in a new room
+const confetti = [];
+const cGeo = new THREE.PlaneGeometry(.14, .24);
+for (let i = 0; i < 90; i++) {
+  const m = new THREE.Mesh(cGeo, new THREE.MeshBasicMaterial({ color: CANDY[i % 6], side: THREE.DoubleSide, transparent: true }));
+  m.visible = false; m.userData = { v: new THREE.Vector3(), life: 0, spin: new THREE.Vector3() };
+  scene.add(m); confetti.push(m);
+}
+function burst() {
+  if (reduce) return;
+  const h = visH(1), origin = new THREE.Vector3(cam.position.x, (.5 - .62) * h, 1);
+  confetti.forEach(m => {
+    const a = Math.random() * Math.PI - Math.PI, sp = 4 + Math.random() * 6;
+    m.position.copy(origin); m.userData.v.set(Math.cos(a) * sp * .8, 6 + Math.random() * 6, (Math.random() - .5) * 2);
+    m.userData.spin.set(Math.random() * 8, Math.random() * 8, Math.random() * 8);
+    m.userData.life = 1.6 + Math.random() * .8; m.visible = true; m.material.opacity = 1;
+  });
+}
+addEventListener('room', e => {
+  burst();
+  toys.forEach(m => { if (m.userData.room === e.detail) { m.userData.pop = 0; m.userData.delay = m.userData.k * .06; } });
+});
+
+function resize() {
+  renderer.setSize(innerWidth, innerHeight, false);
+  cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix();
+  ROOM = visH(0) * cam.aspect;
+  buildBands(); placeToys();
+}
+addEventListener('resize', resize); resize();
+
+const elastic = t => t >= 1 ? 1 : 1 - Math.pow(2, -9 * t) * Math.cos(t * 12);
+const clock = new THREE.Clock();
+(function loop() {
+  const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
+  const p = J.pos, a = Math.floor(p), f = p - a, b = Math.min(N - 1, a + 1);
+  SU.uTop.value.copy(SKY[a][0]).lerp(SKY[b][0], f); SU.uBot.value.copy(SKY[a][1]).lerp(SKY[b][1], f);
+  SU.uOff.value = p * innerWidth * .25; SU.uTime.value = reduce ? 0 : t;
+  groundCol.copy(GROUND[a]).lerp(GROUND[b], f);
+  hillCol.copy(groundCol).lerp(new THREE.Color(1, 1, 1), .55);
+  bands.forEach(bd => bd.mat && bd.mat.color.copy(bd.colorFn()));
+  cam.position.x = p * ROOM;
+
+  for (const m of toys) {
+    const u = m.userData;
+    if (u.pop < 1) { if ((u.delay -= dt) <= 0) u.pop = Math.min(1, u.pop + dt * 1.1); }
+    m.scale.setScalar(u.base * (reduce ? 1 : elastic(u.pop)));
+    if (!reduce) {
+      m.rotation.x += dt * u.spin * .6; m.rotation.y += dt * (u.spin + .3);
+      m.position.y = u.y + Math.sin(t * 1.3 + u.s * 9) * .18;
+    }
+  }
+  for (const m of confetti) {
+    const u = m.userData; if (!m.visible) continue;
+    u.life -= dt; if (u.life <= 0) { m.visible = false; continue; }
+    u.v.y -= 14 * dt; u.v.multiplyScalar(1 - 1.2 * dt);
+    m.position.addScaledVector(u.v, dt);
+    m.rotation.x += u.spin.x * dt; m.rotation.y += u.spin.y * dt; m.rotation.z += u.spin.z * dt;
+    m.material.opacity = Math.min(1, u.life * 1.5);
+  }
+  renderer.clear(); renderer.render(skyScene, skyCam); renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+})();
+</script>
+
+<!-- Spline mascot: walks (hops) along the ground as the world slides, looks at your cursor, chats in a bubble -->
+<script type="module">
+import { Application } from 'https://unpkg.com/@splinetool/runtime@0.9.522/build/runtime.js';
+const J = window.J, N = J.N;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const EYE_NAMES = ['Sphere 2', 'Sphere 3'];
+const RANGE_X = 18, RANGE_UP = 14, RANGE_DN = 8, PUSH_Z = 6;
+const BODY_TURN = .45, BODY_TILT = .15, BUDDY_TURN = .25, EASE_LOOK = .14;
+const GROUND_Y = .86;                 // share of viewport height where the ground line sits
+const HOPS_PER_ROOM = 3, HOP = .05;   // walking bounce
+const CHAR_H = 479, CHAR_W = 466, OFFSET = [25, -25];
+
+const SCENE_B64 = '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';
+async function sceneBytes() {
+  const bin = Uint8Array.from(atob(SCENE_B64), c => c.charCodeAt(0));
+  const stream = new Blob([bin]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return Array.from(new Uint8Array(await new Response(stream).arrayBuffer()));
+}
+const canvas = document.getElementById('mascot');
+const app = new Application(canvas);
+await app.start(await sceneBytes());
+app.setBackgroundColor('transparent');
+const obj = n => app.getAllObjects().find(o => o.name === n);
+const floor = obj('Floor'); if (floor) floor.visible = false;
+
+const cam = app._camera, orbit = app._controls && app._controls.orbitControls;
+const big = obj('Big'), buddy = obj('Little');
+const eyes = app.getAllObjects().filter(o => EYE_NAMES.includes(o.name)).map(o => ({ o, x: o.position.x, y: o.position.y, z: o.position.z }));
+const turners = [[big, BODY_TURN, BODY_TILT], [buddy, BUDDY_TURN, BUDDY_TURN * .4]].filter(t => t[0])
+  .map(([o, turn, tilt]) => ({ o, turn, tilt, rx: o.rotation.x, ry: o.rotation.y, rz: o.rotation.z }));
+const buddyY = buddy ? buddy.position.y : 0;
+
+const W = () => innerWidth, H = () => innerHeight;
+const zoomFor = k => (k === 0 ? .54 : .26) * H() / CHAR_H;
+const space = document.querySelector('.m-space');
+function stackSpot(k) {
+  if (k === 0) {
+    const r = space.getBoundingClientRect(), z = Math.min(r.height * .9 / CHAR_H, W() * .8 / CHAR_W);
+    return { x: W() * .5, y: r.top + r.height * .5, z };
+  }
+  const z = Math.min(H() * .12 / CHAR_H, W() * .24 / CHAR_W), cw = CHAR_W * z, ch = CHAR_H * z;
+  return { x: k % 2 ? W() - cw / 2 - 10 : cw / 2 + 10, y: H() - 74 - ch / 2, z };
+}
+
+const e0 = cam.matrixWorld.elements, RIGHT = [e0[0], e0[1], e0[2]], UP = [e0[4], e0[5], e0[6]];
+const SAFE = { p: cam.position.clone(), t: orbit ? orbit.target.clone() : null };
+function pan(dx, dy) {
+  for (let a = 0; a < 3; a++) {
+    const d = RIGHT[a] * dx + UP[a] * dy;
+    cam.position.setComponent(a, cam.position.getComponent(a) + d);
+    if (orbit) orbit.target.setComponent(a, orbit.target.getComponent(a) + d);
+  }
+  cam.updateMatrixWorld(true);
+}
+function project(p) {
+  const m = cam.matrixWorldInverse.elements, q = cam.projectionMatrix.elements;
+  const v = [m[0]*p.x + m[4]*p.y + m[8]*p.z + m[12], m[1]*p.x + m[5]*p.y + m[9]*p.z + m[13], m[2]*p.x + m[6]*p.y + m[10]*p.z + m[14], 1];
+  const c = [0, 1, 3].map(r => q[r]*v[0] + q[4+r]*v[1] + q[8+r]*v[2] + q[12+r]*v[3]);
+  return [(c[0] / c[2] + 1) / 2 * W(), (1 - c[1] / c[2]) / 2 * H()];
+}
+
+// Speech bubble
+const bubble = document.getElementById('bubble');
+function say(k) {
+  bubble.textContent = J.rooms[k].dataset.say || '';
+  bubble.classList.remove('say'); void bubble.offsetWidth; bubble.classList.add('say');
+}
+say(0); addEventListener('room', e => say(e.detail));
+
+let mx = W() / 2, my = H() * .4, lastMove = 0, lx = 0, ly = 0, phase = 0, face = 0, zCur = null;
+addEventListener('pointermove', e => { mx = e.clientX; my = e.clientY; lastMove = performance.now(); });
+
+(function tick(now) {
+  if (W() < 50 || H() < 50) { requestAnimationFrame(tick); return; }
+  const p = J.pos, a = Math.floor(p), f = p - a, b = Math.min(N - 1, a + 1);
+  const zt = Math.exp(Math.log(zoomFor(a)) + (Math.log(zoomFor(b)) - Math.log(zoomFor(a))) * f);
+  zCur = zCur == null || reduce ? zt : zCur + (zt - zCur) * .15;
+  let z = Math.max(.02, zCur);
+
+  // walking: hop proportional to travel speed
+  const speed = Math.min(1, Math.abs(J.vel) * 1.4), dir = Math.sign(J.vel);
+  if (!reduce) phase += Math.abs(J.vel) * Math.PI * HOPS_PER_ROOM * .016;
+  const hop = reduce ? 0 : Math.abs(Math.sin(phase)) * H() * HOP * speed;
+  let x = W() * .5, y = H() * GROUND_Y - CHAR_H * z * .47 - hop;
+  if (J.stack) {            // phones: big in the hello space, then a small buddy hopping between bottom corners
+    const sa = stackSpot(a), sb = stackSpot(b), e = f;
+    x = sa.x + (sb.x - sa.x) * e;
+    y = sa.y + (sb.y - sa.y) * e - Math.sin(e * Math.PI) * H() * .08;
+    zCur = Math.exp(Math.log(sa.z) + (Math.log(sb.z) - Math.log(sa.z)) * e);
+  }
+
+  z = Math.max(.02, zCur || .02);
+  cam.zoom = z; cam.updateProjectionMatrix(); cam.updateMatrixWorld(true);
+  const s = project(big.position), ax = s[0] + OFFSET[0] * z, ay = s[1] + OFFSET[1] * z;
+  if (Number.isFinite(ax + ay)) pan(-(x - ax) / z, (y - ay) / z);
+  if (!Number.isFinite(cam.position.x + cam.position.y + cam.position.z)) {
+    cam.position.copy(SAFE.p); if (orbit && SAFE.t) orbit.target.copy(SAFE.t); cam.updateMatrixWorld(true);
+  }
+
+  // squash & stretch on each bounce, Piu Piu hops slightly out of step
+  if (big.scale && !reduce) {
+    const sq = 1 - .07 * speed * Math.pow(1 - Math.abs(Math.sin(phase)), 6);
+    big.scale.set(1 / Math.sqrt(sq), sq, 1 / Math.sqrt(sq));
+  }
+  if (buddy && !reduce) buddy.position.y = buddyY + Math.abs(Math.sin(phase + 1.3)) * 30 * speed;
+
+  // look at the cursor (idle glance otherwise); while walking, face the direction of travel
+  let tx, ty;
+  if (now - lastMove < 2500) { tx = (mx - x) / (W() * .5); ty = (my - (y - CHAR_H * z * .15)) / (H() * .5); }
+  else { const k = now / 1000; tx = Math.sin(k * .7) * .5; ty = Math.sin(k * 1.1) * .25; }
+  tx = Math.max(-1, Math.min(1, tx)); ty = Math.max(-1, Math.min(1, ty));
+  lx += (tx - lx) * EASE_LOOK; ly += (ty - ly) * EASE_LOOK;
+  face += (dir * speed - face) * .12;
+  for (const r of turners) {
+    r.o.rotation.y = r.ry + lx * r.turn * (1 - speed * .6) + face * .6;
+    r.o.rotation.x = r.rx + ly * r.tilt;
+    r.o.rotation.z = r.rz - face * .12;
+  }
+  const dy = ly < 0 ? -ly * RANGE_UP : -ly * RANGE_DN, dz = PUSH_Z * (Math.abs(lx) + Math.max(ly, 0));
+  for (const e of eyes) { e.o.position.x = e.x + lx * RANGE_X; e.o.position.y = e.y + dy; e.o.position.z = e.z + dz; }
+
+  // bubble: beside his head in the hello room, above it elsewhere; hidden while walking
+  const bw = bubble.offsetWidth, bh = bubble.offsetHeight, bigMode = z > zoomFor(1) * 1.4;
+  const bx = bigMode ? x + CHAR_W * z * .36 : x - bw / 2 + 14;
+  const by = bigMode ? y - CHAR_H * z * .38 - bh : y - CHAR_H * z * .5 - bh - 18;
+  bubble.style.setProperty('--tail', bigMode ? '26px' : (bw / 2 - 20) + 'px');
+  bubble.style.transform = `translate(${bx}px,${by}px)`;
+  bubble.style.opacity = Math.max(0, 1 - speed * 2.5);
+  requestAnimationFrame(tick);
+})(performance.now());
+</script>
+<script src="assets/bubbles.js"></script>
+</body>
+</html>
