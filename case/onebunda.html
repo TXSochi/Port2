@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Onebunda — Case study · Michael Christianto</title>
-<meta name="description" content="Case study: Onebunda (Healthcare · PWA) — Product Designer, Michael Christianto.">
+<title>OneBunda — Case study · Michael Christianto</title>
+<meta name="description" content="Case study: OneBunda (Healthcare · PWA) — Product Designer, Michael Christianto.">
 <meta name="theme-color" content="#0A0A0B">
 <script>/* theme before first paint: the visitor's saved choice, otherwise their system setting */!function(d,t){try{t=localStorage.getItem('theme')}catch(e){}if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';d.dataset.theme=t;d.classList.add('js');var m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='light'?'#F0EEE9':'#0A0A0B'}(document.documentElement)</script>
 <link rel="icon" type="image/png" href="../assets/favicon.png">
@@ -18,7 +18,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <canvas id="field" aria-hidden="true"></canvas>
 <div class="grain" aria-hidden="true"></div>
-<div id="veil" aria-hidden="true"><span class="mono">Onebunda</span></div>
+<div id="veil" aria-hidden="true"><span class="mono">OneBunda</span></div>
 
 <header class="site">
   <a class="brand" href="../index.html" data-magnetic>Michael Christianto</a>
@@ -26,7 +26,7 @@
   <div class="head-end">
     <nav aria-label="Main">
       <a class="mono link" href="../index.html#work">← All work</a>
-      <a class="pill mono" href="mailto:michael.christianto.job@gmail.com" data-magnetic>Let's talk</a>
+      <a class="pill mono" href="mailto:michaelchristianto.job@gmail.com" data-magnetic>Let's talk</a>
     </nav>
     <button class="tt" type="button" role="switch" aria-checked="true" aria-label="Dark mode" data-theme-toggle>
       <svg class="tt-ico tt-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.2v2.1M12 19.7v2.1M2.2 12h2.1M19.7 12h2.1M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"/></svg>
@@ -39,55 +39,58 @@
 <main id="content">
   <section class="section case-hero">
     <div class="crumbs mono" data-fade><a class="link" href="../index.html#work">Work</a><span>/</span><span>02</span></div>
-    <h1 class="case-title" data-reveal><span class="line"><span>Onebunda</span></span></h1>
-    <p class="lead ph-line" data-fade style="--d:.1s">[Short summary — what Onebunda is, who it serves, and the part you owned.]</p>
-    <dl class="meta" data-fade style="--d:.2s"><div><dt class="mono">Role</dt><dd>Product Designer</dd></div><div><dt class="mono">Category</dt><dd>Healthcare · PWA</dd></div><div><dt class="mono">Platform</dt><dd class="ph-line">[Platform]</dd></div><div><dt class="mono">Timeline</dt><dd class="ph-line">[Timeline]</dd></div></dl>
+    <h1 class="case-title" data-reveal><span class="line"><span>One<em>Bunda</em></span></span></h1>
+    <p class="lead" data-fade style="--d:.1s">One mobile web app for Bunda Group patients — register, book doctors and lab tests, follow a pregnancy, keep kids’ vaccinations on schedule and earn loyalty rewards.</p>
+    <dl class="meta" data-fade style="--d:.2s"><div><dt class="mono">Role</dt><dd>Product Designer</dd></div><div><dt class="mono">Category</dt><dd>Healthcare · PWA</dd></div><div><dt class="mono">Platform</dt><dd>Mobile web app (PWA)</dd></div><div><dt class="mono">Timeline</dt><dd class="ph-line">[Timeline]</dd></div></dl>
   </section>
-  <figure class="cover ph" data-fade><img src="../assets/img/onebunda-cover.jpg" alt="Onebunda — cover" decoding="async" fetchpriority="high" onload="this.parentNode.classList.add('has-img')" onerror="this.remove()"><span class="mono">[Cover image]</span></figure>
+  <figure class="cover ph" data-fade><img src="../assets/img/onebunda-cover.jpg" alt="OneBunda — cover" decoding="async" fetchpriority="high" onload="this.parentNode.classList.add('has-img')" onerror="this.remove()"><span class="mono">[Cover image]</span></figure>
 
   <section class="case-sec" data-fade>
     <span class="mono muted">(01)</span>
-    <h2>The problem</h2>
-    <div class="case-body"><p class="ph-line">[What wasn’t working, and who felt it most. One or two sentences.]</p><p class="ph-line">[The goal you set for the product.]</p></div>
+    <h2>Overview</h2>
+    <div class="case-body"><p>OneBunda is the patient app of Bunda Group — RS Bunda hospitals, Morula IVF and Diagnos labs. It replaces a confusing eHealth experience with one place to register, book, pay and follow up on care.</p></div>
   </section>
   <section class="case-sec" data-fade>
     <span class="mono muted">(02)</span>
-    <h2>Who it’s for</h2>
-    <div class="case-body"><div class="users"><div><h3>[User type]</h3><p>[Their goal and biggest pain point]</p></div><div><h3>[User type]</h3><p>[Their goal and biggest pain point]</p></div><div><h3>[User type]</h3><p>[Their goal and biggest pain point]</p></div></div></div>
+    <h2>The problem</h2>
+    <div class="case-body"><ul class="ticks"><li>The old eHealth UI and flow confused users.</li><li>Patients couldn’t book appointments on their own.</li><li>A new loyalty program needed a home in the product.</li><li>The platform had to connect with Teramedik, Diagnos and the wider Bunda Group.</li></ul></div>
   </section>
   <section class="case-sec" data-fade>
     <span class="mono muted">(03)</span>
-    <h2>What I designed</h2>
-    <div class="case-body"><p class="ph-line">[One line on the scope of your work.]</p><ol class="modules"><li><span class="mono">01</span>[Key flow or feature]</li><li><span class="mono">02</span>[Key flow or feature]</li><li><span class="mono">03</span>[Key flow or feature]</li><li><span class="mono">04</span>[Key flow or feature]</li><li><span class="mono">05</span>[Key flow or feature]</li><li><span class="mono">06</span>[Key flow or feature]</li></ol></div>
+    <h2>The solution</h2>
+    <div class="case-body"><ul class="ticks"><li>Redesigned eHealth to bring Morula and Diagnos under one roof.</li><li>A mobile-web flow for patient registration, verified with a WhatsApp one-time code.</li><li>A loyalty program — points, vouchers and QR redemption — built into the web app.</li><li>Flows prepared for API integration with Teramedik and Diagnos.</li></ul></div>
   </section>
   <section class="case-sec" data-fade>
     <span class="mono muted">(04)</span>
-    <h2>How I approached it</h2>
-    <div class="case-body"><div class="users"><div><h3><em>01</em> — Find the real pain</h3><p>[What you learned from users]</p></div><div><h3><em>02</em> — Draft to prototype</h3><p>[What you drafted, prototyped and tested]</p></div><div><h3><em>03</em> — Iterate &amp; hand over</h3><p>[What changed after feedback]</p></div></div></div>
+    <h2>Design process</h2>
+    <div class="case-body"><div class="users two"><div><h3>UX design</h3><ol class="flow"><li>Research</li><li>Problem statement</li><li>Empathy map</li><li>User persona</li></ol></div><div><h3>UI design</h3><ol class="flow"><li>Wireframing</li><li>Lo-fi design</li><li>Hi-fi design</li><li>Prototype</li></ol></div></div></div>
   </section>
-  <section class="case-sec" data-fade style="border-bottom:0">
+  <section class="case-sec" data-fade>
     <span class="mono muted">(05)</span>
-    <h2>Screens</h2>
-    <div class="case-body"><p class="ph-line">[Short caption for the screens below.]</p></div>
+    <h2>9 core services</h2>
+    <div class="case-body"><ol class="modules"><li><span class="mono">01</span>Make an appointment</li><li><span class="mono">02</span>Lab test</li><li><span class="mono">03</span>Lab result</li><li><span class="mono">04</span>Vaccine</li><li><span class="mono">05</span>Pregnancy book</li><li><span class="mono">06</span>Morula IVF book</li><li><span class="mono">07</span>Antenatal care</li><li><span class="mono">08</span>Kids vaccination</li><li><span class="mono">09</span>Loyalty program</li></ol></div>
   </section>
-  <div class="gallery" data-fade>
-    <div class="ph"><img src="../assets/img/onebunda-1.jpg" alt="Onebunda — wide screen" decoding="async" loading="lazy" onload="this.parentNode.classList.add('has-img')" onerror="this.remove()"><span class="mono">[Wide screen]</span></div>
-    <div class="ph"><img src="../assets/img/onebunda-2.jpg" alt="Onebunda — detail" decoding="async" loading="lazy" onload="this.parentNode.classList.add('has-img')" onerror="this.remove()"><span class="mono">[Detail]</span></div>
-    <div class="ph"><img src="../assets/img/onebunda-3.jpg" alt="Onebunda — mobile screen 1" decoding="async" loading="lazy" onload="this.parentNode.classList.add('has-img')" onerror="this.remove()"><span class="mono">[Mobile screen]</span></div>
-    <div class="ph"><img src="../assets/img/onebunda-4.jpg" alt="Onebunda — mobile screen 2" decoding="async" loading="lazy" onload="this.parentNode.classList.add('has-img')" onerror="this.remove()"><span class="mono">[Mobile screen]</span></div>
-    <div class="ph"><img src="../assets/img/onebunda-5.jpg" alt="Onebunda — mobile screen 3" decoding="async" loading="lazy" onload="this.parentNode.classList.add('has-img')" onerror="this.remove()"><span class="mono">[Mobile screen]</span></div>
-  </div>
   <section class="case-sec" data-fade>
     <span class="mono muted">(06)</span>
-    <h2>Outcome</h2>
-    <div class="case-body">
-      <div class="metrics">
-        <div><strong>[Metric]</strong><span class="mono muted">[What it measures]</span></div>
-        <div><strong>[Metric]</strong><span class="mono muted">[What it measures]</span></div>
-        <div><strong>[Metric]</strong><span class="mono muted">[What it measures]</span></div>
-      </div>
-      <p class="ph-line" style="margin-top:28px">[What changed for the team after launch, and what you learned.]</p>
-    </div>
+    <h2>Key flows</h2>
+    <div class="case-body"><div class="users"><div><h3>Sign in with WhatsApp</h3><p>Log in with a phone number and a one-time code. New patients register in one short form.</p></div><div><h3>Book a doctor</h3><p>Pick a facility, hospital, doctor and time — for yourself or family — then pay by virtual account or card.</p></div><div><h3>Antenatal care</h3><p>A pregnancy timeline by trimester, recommended check-ups, QR check-in, doctor’s notes and weekly baby-size milestones.</p></div><div><h3>Kids vaccination</h3><p>Child profiles with a vaccination schedule and booking in a few taps.</p></div><div><h3>Lab tests &amp; results</h3><p>Choose a test and a location, book a slot, then download the results.</p></div><div><h3>Loyalty &amp; rewards</h3><p>Earn points from every transaction, redeem vouchers and claim them with a QR code at the counter.</p></div></div></div>
+  </section>
+  <section class="case-sec" data-fade style="border-bottom:0">
+    <span class="mono muted">(07)</span>
+    <h2>Screens</h2>
+    <div class="case-body"><p class="muted">A few of the 60+ screens: the booking flow, loyalty, home, antenatal care and pregnancy milestones.</p></div>
+  </section>
+  <div class="gallery" data-fade>
+    <div class="ph"><img src="../assets/img/onebunda-1.jpg" alt="OneBunda — Booking flow: facility, hospital, doctor and identity check" decoding="async" loading="lazy" onload="this.parentNode.classList.add('has-img')" onerror="this.remove()"><span class="mono">[Wide screen]</span></div>
+    <div class="ph"><img src="../assets/img/onebunda-2.jpg" alt="OneBunda — Loyalty points and reward shop" decoding="async" loading="lazy" onload="this.parentNode.classList.add('has-img')" onerror="this.remove()"><span class="mono">[Detail]</span></div>
+    <div class="ph"><img src="../assets/img/onebunda-3.jpg" alt="OneBunda — Home with the nine core services" decoding="async" loading="lazy" onload="this.parentNode.classList.add('has-img')" onerror="this.remove()"><span class="mono">[Mobile screen]</span></div>
+    <div class="ph"><img src="../assets/img/onebunda-4.jpg" alt="OneBunda — Antenatal care home" decoding="async" loading="lazy" onload="this.parentNode.classList.add('has-img')" onerror="this.remove()"><span class="mono">[Mobile screen]</span></div>
+    <div class="ph"><img src="../assets/img/onebunda-5.jpg" alt="OneBunda — Pregnancy milestones" decoding="async" loading="lazy" onload="this.parentNode.classList.add('has-img')" onerror="this.remove()"><span class="mono">[Mobile screen]</span></div>
+  </div>
+  <section class="case-sec" data-fade>
+    <span class="mono muted">(08)</span>
+    <h2>At a glance</h2>
+    <div class="case-body"><div class="metrics"><div><strong>9</strong><span class="mono muted">Core services in one app</span></div><div><strong>60+</strong><span class="mono muted">Screens designed</span></div><div><strong>3</strong><span class="mono muted">Brands under one roof</span></div></div><p class="ph-line" style="margin-top:28px">[Impact after launch — e.g. registrations, bookings or loyalty sign-ups.]</p></div>
   </section>
   <a class="next" href="facethecamera.html" data-cursor="Next">
     <span class="mono muted">Next case study</span>
@@ -98,7 +101,7 @@
 <footer class="site mono">
   <span>© 2026 Michael Christianto</span>
   <nav aria-label="Elsewhere">
-    <a class="link" href="mailto:michael.christianto.job@gmail.com">Email</a>
+    <a class="link" href="mailto:michaelchristianto.job@gmail.com">Email</a>
     <a class="link" href="https://www.linkedin.com/in/michael-christiantoo/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
     <a class="link" href="https://www.behance.net/michaelchristianto" target="_blank" rel="noopener noreferrer">Behance ↗</a>
     <a class="link" href="https://drive.google.com/file/d/1l_kRScQsm5MerBtPpweXRXTKqoEeShX1/view?usp=drive_link" target="_blank" rel="noopener noreferrer">CV ↗</a>

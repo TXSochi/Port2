@@ -1,6 +1,6 @@
 # Gambar portfolio
 
-Semua gambar di folder ini masih **dummy**. Untuk mengganti, upload gambar baru dengan **nama file yang sama persis** (file lama otomatis tertimpa). Kalau sebuah file dihapus, kotak placeholder yang tampil, jadi website tidak rusak.
+Gambar OneBunda dan foto portrait sudah final; gambar proyek lain masih **dummy**. Untuk mengganti, upload gambar baru dengan **nama file yang sama persis** (file lama otomatis tertimpa). Kalau sebuah file dihapus, kotak placeholder yang tampil, jadi website tidak rusak.
 
 - Format: **JPG**, quality ±80%, warna sRGB
 - Ukuran file: usahakan di bawah 300 KB (cover di bawah 500 KB). Kompres di squoosh.app atau tinyjpg.com
@@ -13,7 +13,8 @@ Slug proyek: `paragon-wms`, `onebunda`, `facethecamera`, `b2b-supply-chain`
 | Nama file | Ukuran (px) | Rasio | Muncul di |
 |---|---|---|---|
 | `<slug>-thumb.jpg` | 800 × 600 | 4:3 | Preview yang mengikuti kursor saat hover baris proyek di *Selected work* (tampil hitam-putih) |
-| `portrait.jpg` | 1200 × 1500 | 4:5 | Foto di section *About* (belum ada, masih placeholder) |
+| `MikeDarkTransparent-portrait.webp` | ±1000 px, background transparan | bebas | Foto di section *About* saat **dark mode** |
+| `MikeLightTransparent-portrait.webp` | ±1000 px, background transparan | bebas | Foto di section *About* saat **light mode** |
 
 ## Halaman case study (case/<slug>.html)
 
