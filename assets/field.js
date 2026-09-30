@@ -8,6 +8,8 @@
    - Cursor gently pushes points away; a click sends a shockwave.
    - Particles gather on load and scatter when you leave the page.
    Home: sections carry data-shape. Case pages: <body data-shape="n">.
+   Themes: dark = light dust added onto black; light = graphite dust
+   multiplied into paper. Follows <html data-theme> and 'theme:change'.
 ------------------------------------------------------------------- */
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
@@ -16,7 +18,10 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fine = matchMedia('(pointer: fine)').matches;
 const small = Math.min(innerWidth, innerHeight) < 600 || !fine;
 const COUNT = small ? 7000 : 15000;
-const INK = new THREE.Color('#ECE9E3');
+const THEMES = {
+  dark:  { ink: new THREE.Color('#ECE9E3'), src: THREE.OneFactor,  dst: THREE.OneFactor },                  // dst + ink·a
+  light: { ink: new THREE.Color(.68, .68, .68), src: THREE.ZeroFactor, dst: THREE.OneMinusSrcColorFactor },  // dst · (1 − ink·a)
+};
 
 let renderer;
 try {
@@ -25,7 +30,6 @@ try {
   canvas.remove(); dispatchEvent(new Event('field:ready')); throw e;   // no WebGL: page still works
 }
 renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1.5 : 1.75));
-renderer.setClearColor(0x0A0A0B, 1);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(35, 1, .1, 100);
@@ -112,10 +116,12 @@ const U = {
   uTime: { value: 0 }, uFrom: { value: 0 }, uTo: { value: 0 }, uT: { value: 0 }, uIntro: { value: reduce ? 1 : 0 },
   uSize: { value: small ? 2.3 : 1.9 }, uPR: { value: renderer.getPixelRatio() }, uOpacity: { value: 1 },
   uMouse: { value: new THREE.Vector3(99, 99, 0) }, uMouseK: { value: 0 }, uShockPos: { value: new THREE.Vector3() },
-  uShockT: { value: -1 }, uSwirl: { value: reduce ? 0 : .55 }, uColor: { value: INK },
+  uShockT: { value: -1 }, uSwirl: { value: reduce ? 0 : .55 }, uColor: { value: new THREE.Color() },
 };
 const mat = new THREE.ShaderMaterial({
-  uniforms: U, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  uniforms: U, transparent: true, depthWrite: false,
+  blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor,
+  blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor,   // keep the canvas opaque (three's context has alpha)
   vertexShader: /* glsl */`
     attribute vec3 p1; attribute vec3 p2; attribute vec3 p3; attribute vec3 p4; attribute vec3 aScatter; attribute float aRnd;
     uniform float uTime, uFrom, uTo, uT, uIntro, uSize, uPR, uOpacity, uMouseK, uShockT, uSwirl;
@@ -153,8 +159,15 @@ const mat = new THREE.ShaderMaterial({
     }`,
   fragmentShader: /* glsl */`
     precision highp float; uniform vec3 uColor; varying float vA;
-    void main(){ float d = length(gl_PointCoord - .5); float a = smoothstep(.5, .12, d); gl_FragColor = vec4(uColor, a * a * vA); }`,
+    void main(){ float d = length(gl_PointCoord - .5); float a = smoothstep(.5, .12, d); float A = a * a * vA; gl_FragColor = vec4(uColor * A, A); }`,
 });
+function setTheme() {
+  const root = document.documentElement, t = THEMES[root.dataset.theme === 'light' ? 'light' : 'dark'];
+  const bg = getComputedStyle(root).getPropertyValue('--bg').trim();
+  renderer.setClearColor(new THREE.Color(bg || (t === THEMES.light ? '#F0EEE9' : '#0A0A0B')), 1);
+  U.uColor.value.copy(t.ink); mat.blendSrc = t.src; mat.blendDst = t.dst;
+}
+setTheme();
 const points = new THREE.Points(geo, mat);
 points.frustumCulled = false;
 const group = new THREE.Group(); group.add(points); scene.add(group);
@@ -212,6 +225,7 @@ addEventListener('veil:lifted', () => { introDir = 1; });
 setTimeout(() => { if (!introDir) introDir = 1; }, 1800);
 addEventListener('page:leave', () => { introDir = -1.6; });
 addEventListener('pageshow', e => { if (e.persisted) { introP = 1; introDir = 0; } });
+addEventListener('theme:change', () => { setTheme(); renderer.render(scene, camera); });   // draw the new look right away
 
 /* ---------- loop ---------- */
 const clock = new THREE.Clock();

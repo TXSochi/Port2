@@ -1,16 +1,50 @@
-/* Interface layer: page veil + transitions, reveals, custom cursor, magnetic links,
-   work-row hover preview, current-section label, copy email. No dependencies. */
+/* Interface layer: dark/light theme switch, page veil + transitions, reveals, custom cursor,
+   magnetic links, work-row hover preview, current-section label, copy email. No dependencies. */
 (() => {
   const root = document.documentElement;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fine = matchMedia('(pointer: fine)').matches;
+
+  /* ---------- theme: dark / light ----------
+     The inline script in <head> already picked the theme before first paint
+     (saved choice, otherwise the system setting). This keeps the switch in sync,
+     remembers a click, and animates the change as a circle growing from the switch. */
+  const meta = document.querySelector('meta[name="theme-color"]');
+  const toggles = document.querySelectorAll('[data-theme-toggle]');
+  const saved = () => { try { return localStorage.getItem('theme'); } catch { return null; } };
+  function applyTheme(t) {
+    root.dataset.theme = t;
+    toggles.forEach(b => b.setAttribute('aria-checked', t === 'dark' ? 'true' : 'false'));
+    if (meta) meta.content = getComputedStyle(root).getPropertyValue('--bg').trim();
+    dispatchEvent(new CustomEvent('theme:change', { detail: t }));
+  }
+  applyTheme(root.dataset.theme === 'light' ? 'light' : 'dark');
+  const sysLight = matchMedia('(prefers-color-scheme: light)');
+  if (sysLight.addEventListener) sysLight.addEventListener('change', e => { if (!saved()) applyTheme(e.matches ? 'light' : 'dark'); });
+  addEventListener('storage', e => { if (e.key === 'theme' && (e.newValue === 'light' || e.newValue === 'dark')) applyTheme(e.newValue); });
+  toggles.forEach(btn => btn.addEventListener('click', () => {
+    const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+    try { localStorage.setItem('theme', next); } catch {}
+    if (reduce || !document.startViewTransition) { applyTheme(next); return; }
+    const r = btn.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const R = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy));
+    const vt = document.startViewTransition(() => applyTheme(next));
+    vt.ready.then(() => root.animate(
+      { clipPath: [`circle(0px at ${cx}px ${cy}px)`, `circle(${R}px at ${cx}px ${cy}px)`] },
+      { duration: 900, easing: 'cubic-bezier(.7,0,.2,1)', pseudoElement: '::view-transition-new(root)' }
+    )).catch(() => {});
+  }));
 
   /* ---------- veil: lift once the WebGL field has drawn (never wait longer than 1.4 s) ---------- */
   let lifted = false;
   const lift = () => { if (lifted) return; lifted = true; root.classList.add('ready'); dispatchEvent(new Event('veil:lifted')); };
   addEventListener('field:ready', () => setTimeout(lift, 120));
   setTimeout(lift, reduce ? 0 : 1400);
-  addEventListener('pageshow', e => { if (e.persisted) { root.classList.remove('leaving'); lifted = false; lift(); } });
+  addEventListener('pageshow', e => {
+    if (!e.persisted) return;
+    const t = saved(); if ((t === 'light' || t === 'dark') && t !== root.dataset.theme) applyTheme(t);
+    root.classList.remove('leaving'); lifted = false; lift();
+  });
 
   /* ---------- curtain between internal pages ---------- */
   document.addEventListener('click', e => {
@@ -85,18 +119,31 @@
   /* ---------- work-row preview that trails the cursor ---------- */
   const pv = document.querySelector('.preview');
   const pvLabel = pv && pv.querySelector('[data-preview-label]');
-  let px = x, py = y, on = false;
-  document.querySelectorAll('[data-preview]').forEach(r => {
+  const rows = document.querySelectorAll('[data-preview]');
+  const thumbs = new Map();                 // row -> thumbnail that actually loaded
+  let px = x, py = y, on = false, hovered = null;
+  function fill(r) {
+    pv.querySelector('img')?.remove();
+    const src = thumbs.get(r);
+    if (src) { const el = new Image(); el.src = src; el.alt = ''; pv.prepend(el); pvLabel.textContent = ''; }
+    else pvLabel.textContent = r.dataset.preview;          // no image yet: keep the text placeholder
+  }
+  // fetch thumbnails once the page has settled; a missing file simply keeps the placeholder
+  const preload = () => setTimeout(() => rows.forEach(r => {
+    const src = r.dataset.previewImg; if (!src) return;
+    const im = new Image(); im.decoding = 'async';
+    im.onload = () => { thumbs.set(r, src); if (hovered === r && pv) fill(r); };
+    im.src = src;
+  }), 300);
+  if (document.readyState === 'complete') preload(); else addEventListener('load', preload);
+  rows.forEach(r => {
     r.addEventListener('pointerenter', () => {
       if (!pv) return;
-      const img = r.dataset.previewImg;
-      pv.querySelector('img')?.remove();
-      if (img) { const el = new Image(); el.src = img; el.alt = ''; pv.prepend(el); pvLabel.textContent = ''; }
-      else pvLabel.textContent = r.dataset.preview;
+      hovered = r; fill(r);
       if (!on) { px = x; py = y; }
       on = true; pv.classList.add('on');
     });
-    r.addEventListener('pointerleave', () => { on = false; pv && pv.classList.remove('on'); });
+    r.addEventListener('pointerleave', () => { hovered = null; on = false; pv && pv.classList.remove('on'); });
   });
 
   (function loop() {
