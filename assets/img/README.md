@@ -8,6 +8,8 @@ Gambar OneBunda dan foto portrait sudah final; gambar proyek lain masih **dummy*
 
 Slug proyek: `paragon-wms`, `onebunda`, `facethecamera`, `b2b-supply-chain`
 
+Nama yang tampil di website sudah diganti (WMS System, E-Health PWA, AI Teleprompter, B2B Supply Chain), tapi **nama file dan URL tetap memakai slug lama di atas**, jadi gambar lama tidak perlu di-rename.
+
 ## Home (index.html)
 
 | Nama file | Ukuran (px) | Rasio | Muncul di |

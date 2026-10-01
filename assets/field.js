@@ -3,6 +3,7 @@
    One cloud of points that morphs into a different formation per section:
      0 sphere  (hero)      1 racks  (work — a warehouse lattice)
      2 ribbon  (process)   3 ring   (about)     4 wave (contact)
+     5 helix   (interlude — "every design has a pattern": a DNA double helix)
    - Scroll drives the morph (each point travels on its own delay, so it
      flows like a flock rather than a linear blend).
    - Cursor gently pushes points away; a click sends a shockwave.
@@ -96,6 +97,17 @@ function wave(n) {                                         // a calm field, like
   }
   return a;
 }
+function helix(n) {                                        // two strands and their base pairs, laid along x (the shader spins it)
+  const a = new Float32Array(n * 3), L = 7.6, R = .64, turns = 3.4, RUNGS = 40;
+  for (let i = 0; i < n; i++) {
+    const q = rnd(); let x, y, z;
+    if (q < .64) { const t = rnd(), th = t * turns * 6.2832 + (rnd() < .5 ? 0 : Math.PI), r = R * (1 + (rnd() - .5) * .1); x = (t - .5) * L; y = Math.cos(th) * r; z = Math.sin(th) * r; }
+    else if (q < .93) { const j = Math.floor(rnd() * RUNGS), t = (j + .5) / RUNGS, th = t * turns * 6.2832, u = rnd() * 2 - 1; x = (t - .5) * L + (rnd() - .5) * .02; y = Math.cos(th) * R * u; z = Math.sin(th) * R * u; }
+    else { x = (rnd() - .5) * L * 1.15; y = (rnd() - .5) * 2.6; z = (rnd() - .5) * 2.2; }
+    a[i * 3] = x; a[i * 3 + 1] = y; a[i * 3 + 2] = z;
+  }
+  return a;
+}
 
 const geo = new THREE.BufferGeometry();
 geo.setAttribute('position', new THREE.BufferAttribute(sphere(COUNT), 3));
@@ -103,6 +115,7 @@ geo.setAttribute('p1', new THREE.BufferAttribute(racks(COUNT), 3));
 geo.setAttribute('p2', new THREE.BufferAttribute(ribbon(COUNT), 3));
 geo.setAttribute('p3', new THREE.BufferAttribute(ring(COUNT), 3));
 geo.setAttribute('p4', new THREE.BufferAttribute(wave(COUNT), 3));
+geo.setAttribute('p5', new THREE.BufferAttribute(helix(COUNT), 3));
 const scatter = new Float32Array(COUNT * 3), rnds = new Float32Array(COUNT);
 for (let i = 0; i < COUNT; i++) {
   const u = rnd() * 2 - 1, th = rnd() * 6.2832, r = Math.sqrt(1 - u * u), R = 5 + rnd() * 6;
@@ -116,15 +129,15 @@ const U = {
   uTime: { value: 0 }, uFrom: { value: 0 }, uTo: { value: 0 }, uT: { value: 0 }, uIntro: { value: reduce ? 1 : 0 },
   uSize: { value: small ? 2.3 : 1.9 }, uPR: { value: renderer.getPixelRatio() }, uOpacity: { value: 1 },
   uMouse: { value: new THREE.Vector3(99, 99, 0) }, uMouseK: { value: 0 }, uShockPos: { value: new THREE.Vector3() },
-  uShockT: { value: -1 }, uSwirl: { value: reduce ? 0 : .55 }, uColor: { value: new THREE.Color() },
+  uShockT: { value: -1 }, uSwirl: { value: reduce ? 0 : .55 }, uColor: { value: new THREE.Color() }, uPortrait: { value: 0 },
 };
 const mat = new THREE.ShaderMaterial({
   uniforms: U, transparent: true, depthWrite: false,
   blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor,
   blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor,   // keep the canvas opaque (three's context has alpha)
   vertexShader: /* glsl */`
-    attribute vec3 p1; attribute vec3 p2; attribute vec3 p3; attribute vec3 p4; attribute vec3 aScatter; attribute float aRnd;
-    uniform float uTime, uFrom, uTo, uT, uIntro, uSize, uPR, uOpacity, uMouseK, uShockT, uSwirl;
+    attribute vec3 p1; attribute vec3 p2; attribute vec3 p3; attribute vec3 p4; attribute vec3 p5; attribute vec3 aScatter; attribute float aRnd;
+    uniform float uTime, uFrom, uTo, uT, uIntro, uSize, uPR, uOpacity, uMouseK, uShockT, uSwirl, uPortrait;
     uniform vec3 uMouse, uShockPos;
     varying float vA;
     vec3 rotY(vec3 p, float a){ float c = cos(a), s = sin(a); return vec3(c*p.x + s*p.z, p.y, -s*p.x + c*p.z); }
@@ -135,7 +148,8 @@ const mat = new THREE.ShaderMaterial({
       if (k < 1.5) return rotX(rotY(p1, -.55 + sin(uTime * .12) * .3), .18);
       if (k < 2.5) { vec3 q = p2; q.y += sin(q.x * .9 + uTime * .6) * .12; return rotY(q, -.25); }
       if (k < 3.5) return rotZ(rotX(rotY(p3, uTime * .09), 1.2), .32);
-      vec3 w = p4; w.y += sin(w.x * 1.1 + uTime * .8) * .14 + cos(w.z * 1.6 + uTime * .6) * .09; return w;
+      if (k < 4.5) { vec3 w = p4; w.y += sin(w.x * 1.1 + uTime * .8) * .14 + cos(w.z * 1.6 + uTime * .6) * .09; return w; }
+      return rotZ(rotX(p5, uTime * .32), .14 + uPortrait * 1.43);        // helix: spins on its axis; stands upright on tall screens
     }
     void main(){
       float lt = smoothstep(aRnd * .35, aRnd * .35 + .65, uT);            // each point leaves on its own delay
@@ -180,6 +194,7 @@ const LAYOUT = {
   2: [0, .55, 0, 1, .5],          // process: ribbon across the page, above the steps
   3: [-1.6, .1, 0, .85, .72],     // about: ring behind the portrait
   4: [0, -.3, 0, 1, .6],          // contact: horizon low, under the email line
+  5: [0, -.04, 0, 1, .62],        // interlude: the helix runs edge to edge behind the quote
 };
 const CASE_LAYOUT = [1.9, .2, -1.2, .9, .36];
 const secs = [...document.querySelectorAll('[data-shape]')].filter(s => s !== document.body);
@@ -191,7 +206,7 @@ function measure() {
   W = canvas.clientWidth || innerWidth; H = canvas.clientHeight || innerHeight;
   renderer.setSize(W, H, false); camera.aspect = W / H; camera.updateProjectionMatrix();
   U.uPR.value = renderer.getPixelRatio();
-  portrait = W / H < 1; k = Math.min(1, Math.max(.55, (W / H) / 1.45));
+  portrait = W / H < 1; k = Math.min(1, Math.max(.55, (W / H) / 1.45)); U.uPortrait.value = portrait ? 1 : 0;
   const vh = innerHeight, max = Math.max(0, document.documentElement.scrollHeight - vh);
   anchors = secs.map((s, i) => i === 0 ? 0 : Math.min(max, Math.max(0, s.offsetTop + s.offsetHeight / 2 - vh / 2)));
 }

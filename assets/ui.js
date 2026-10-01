@@ -1,5 +1,6 @@
 /* Interface layer: dark/light theme switch, page veil + transitions, reveals, custom cursor,
-   magnetic links, work-row hover preview, current-section label, copy email. No dependencies. */
+   magnetic links, work-row hover preview, current-section label, copy email,
+   the dust effects (page snap, portrait snap — see dust.js) and the pattern interlude. */
 (() => {
   const root = document.documentElement;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -43,7 +44,8 @@
   addEventListener('pageshow', e => {
     if (!e.persisted) return;
     const t = saved(); if ((t === 'light' || t === 'dark') && t !== root.dataset.theme) applyTheme(t);
-    root.classList.remove('leaving'); lifted = false; lift();
+    root.classList.remove('leaving', 'dusting'); document.querySelectorAll('canvas.dust').forEach(c => c.remove());
+    lifted = false; lift();
   });
 
   /* ---------- curtain between internal pages ---------- */
@@ -57,9 +59,85 @@
     if (url.pathname === location.pathname && url.search === location.search) return;   // same-page anchors scroll natively
     e.preventDefault();
     if (reduce) { location.href = url.href; return; }
-    root.classList.add('leaving'); dispatchEvent(new Event('page:leave'));
+    if (root.classList.contains('dusting')) return;
+    dispatchEvent(new Event('page:leave'));
+    // the page turns to dust and blows away, then the next page arrives behind its veil
+    if (window.Dust && Dust.ok) try {
+      const d = Dust.snap([document.querySelector('main'), document.querySelector('footer.site'), document.querySelector('.preview.on')],
+        { budget: fine ? 200000 : 70000, sweep: .5, life: .8 });
+      root.classList.add('dusting');
+      d.play(0, d.T, d.T * 1000);
+      setTimeout(() => { location.href = url.href; }, 1100);
+      return;
+    } catch (err) { console.warn("dust", err); root.classList.remove("dusting"); document.querySelectorAll("canvas.dust").forEach(c => c.remove()); }
+    root.classList.add('leaving');
     setTimeout(() => { location.href = url.href; }, 650);
   });
+
+  /* ---------- portrait: click (or Enter) to snap it into dust; it flies back a moment later ---------- */
+  const fig = document.querySelector('.portrait[data-snap]');
+  if (fig && window.Dust && Dust.ok) {
+    const hint = fig.querySelector('.snap-hint'); if (hint && !fine) hint.textContent = 'Tap to snap ✦';
+    fig.tabIndex = 0; fig.setAttribute('role', 'button'); fig.setAttribute('aria-label', 'Snap the portrait into dust');
+    let busy = false;
+    const go = async () => {
+      if (busy) return; busy = true;
+      try {
+        const r = fig.getBoundingClientRect(), x = Math.max(0, r.left - 60), y = r.top - Math.min(320, r.height * .55);
+        const region = { x, y, w: Math.min(innerWidth - x, r.right - x + Math.min(520, innerWidth * .45)), h: r.bottom - y + 40 };
+        const d = Dust.snap([fig], { region, budget: fine ? 160000 : 60000, sweep: .75, life: 1.15, drift: 1.15, z: 2 });
+        fig.classList.add('snapped');
+        await d.play(0, d.T, d.T * 1000);
+        await new Promise(res => setTimeout(res, 450));
+        await d.play(d.T, 0, 1800);
+        fig.classList.remove('snapped'); d.destroy();
+      } catch (err) { console.warn("dust", err); fig.classList.remove("snapped"); }
+      busy = false;
+    };
+    fig.addEventListener('click', go);
+    fig.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  }
+
+  /* ---------- interlude: the quote's letters drift in as dust and settle while you scroll ---------- */
+  const quote = document.querySelector('[data-assemble]');
+  if (quote && !reduce) {
+    const chars = [];
+    (function split(node) {
+      [...node.childNodes].forEach(n => {
+        if (n.nodeType === 1) return split(n);
+        if (n.nodeType !== 3) return;
+        const frag = document.createDocumentFragment();
+        n.nodeValue.split(/(\s+)/).forEach(part => {
+          if (!part) return;
+          if (/^\s+$/.test(part)) return frag.append(document.createTextNode(part));
+          const w = document.createElement('span'); w.className = 'qw';
+          for (const ch of part) { const c = document.createElement('span'); c.className = 'qc'; c.textContent = ch; w.append(c); chars.push(c); }
+          frag.append(w);
+        });
+        n.replaceWith(frag);
+      });
+    })(quote);
+    const N = chars.length;
+    const grains = chars.map((c, i) => ({ c, d: i / N * .45 + Math.random() * .1, dx: 90 + Math.random() * 340, dy: (Math.random() - .5) * 280, r: (Math.random() - .5) * 100, s: .35 + Math.random() * .5 }));
+    const sec = quote.closest('.pattern');
+    let active = false, last = -1;
+    const update = () => {
+      const r = sec.getBoundingClientRect(), vh = innerHeight;
+      const p = Math.min(1, Math.max(0, (vh * .75 - r.top) / (vh * .75 + (r.height - vh) * .5)));
+      if (Math.abs(p - last) > .0004) {
+        last = p;
+        for (const g of grains) {
+          const k = Math.min(1, Math.max(0, (p - g.d) / .4)), e = 1 - Math.pow(1 - k, 3), q = 1 - e;
+          g.c.style.transform = q > .001 ? `translate(${g.dx * q}px,${g.dy * q}px) rotate(${g.r * q}deg) scale(${1 - (1 - g.s) * q})` : '';
+          g.c.style.opacity = e.toFixed(3);
+          g.c.style.filter = q > .01 ? `blur(${(q * 10).toFixed(2)}px)` : '';
+        }
+      }
+      if (active) requestAnimationFrame(update);
+    };
+    if ('IntersectionObserver' in window) new IntersectionObserver(([en]) => { const was = active; active = en.isIntersecting; if (active && !was) requestAnimationFrame(update); }).observe(sec);
+    update();
+  }
 
   /* ---------- reveals ---------- */
   const revealEls = document.querySelectorAll('[data-reveal],[data-fade]');

@@ -246,6 +246,28 @@ footer.site nav{display:flex;flex-wrap:wrap;gap:12px 28px}
 footer.site a{color:var(--fg)}
 
 /* ---------- responsive ---------- */
+/* interlude: "Every design has a pattern" — letters assemble from dust (ui.js), the field forms a helix (field.js) */
+.pattern{position:relative;height:220vh;padding:0 var(--pad);overflow-x:clip}   /* clip, not hidden: keeps the sticky child working */
+.pattern-stick{position:sticky;top:0;height:100vh;height:100svh;display:grid;align-content:center;justify-items:center;text-align:center;gap:clamp(22px,4vh,40px)}
+.quote{font-family:var(--serif);font-weight:400;font-size:clamp(54px,min(10.5vw,19vh),180px);line-height:.92;letter-spacing:-.025em;margin:0}
+.quote .ql{display:block}
+.quote em{font-style:italic}
+.qw{display:inline-block;white-space:nowrap}
+.qc{display:inline-block;will-change:transform,opacity,filter}
+.pattern-sub{max-width:40ch;margin:0;line-height:1.7}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* dust: the snap effect (dust.js) */
+.dusting main,.dusting footer.site,.dusting .preview{visibility:hidden}
+.portrait .snap-hint{display:none}
+.can-dust .portrait[data-snap]{cursor:pointer}
+.can-dust .portrait .snap-hint{display:block;position:absolute;left:0;bottom:-34px;margin:0;color:var(--muted);transition:opacity .4s}
+.portrait.snapped img{opacity:0;transition:none}
+.portrait.snapped .snap-hint{opacity:0}
+.portrait[data-snap]:focus-visible{outline:1px solid var(--fg);outline-offset:8px}
+@media (max-width:760px){.pattern{height:180vh}}
+@media (max-width:599px){.can-dust .portrait[data-snap]{margin-bottom:44px}}
+
 @media (max-width:1100px){.now{display:none}}
 @media (max-width:1200px){
   .row{grid-template-columns:80px 1fr 210px 32px;row-gap:4px}
