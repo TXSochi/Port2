@@ -3,7 +3,8 @@
    One cloud of points that morphs into a different formation per section:
      0 sphere  (hero)      1 racks  (work — a warehouse lattice)
      2 ribbon  (process)   3 ring   (about)     4 wave (contact)
-     5 helix   (interlude — "every design has a pattern": a DNA double helix)
+     5 interlude ("every design has a pattern"): cycles helix → sphere → grid → ribbon,
+       one pattern every 4 s, morphing smoothly (and tells ui.js which one via 'pattern:change')
    - Scroll drives the morph (each point travels on its own delay, so it
      flows like a flock rather than a linear blend).
    - Cursor gently pushes points away; a click sends a shockwave.
@@ -126,10 +127,11 @@ geo.setAttribute('aScatter', new THREE.BufferAttribute(scatter, 3));
 geo.setAttribute('aRnd', new THREE.BufferAttribute(rnds, 1));
 
 const U = {
-  uTime: { value: 0 }, uFrom: { value: 0 }, uTo: { value: 0 }, uT: { value: 0 }, uIntro: { value: reduce ? 1 : 0 },
+  uTime: { value: 0 }, uFrom: { value: 0 }, uTo: { value: 0 }, uT: { value: 0 }, uIntro: { value: 0 },
+  uCycA: { value: 6 }, uCycB: { value: 6 }, uCycT: { value: 0 },
   uSize: { value: small ? 2.3 : 1.9 }, uPR: { value: renderer.getPixelRatio() }, uOpacity: { value: 1 },
   uMouse: { value: new THREE.Vector3(99, 99, 0) }, uMouseK: { value: 0 }, uShockPos: { value: new THREE.Vector3() },
-  uShockT: { value: -1 }, uSwirl: { value: reduce ? 0 : .55 }, uColor: { value: new THREE.Color() }, uPortrait: { value: 0 },
+  uShockT: { value: -1 }, uSwirl: { value: reduce ? .25 : .55 }, uColor: { value: new THREE.Color() }, uPortrait: { value: 0 },
 };
 const mat = new THREE.ShaderMaterial({
   uniforms: U, transparent: true, depthWrite: false,
@@ -137,19 +139,24 @@ const mat = new THREE.ShaderMaterial({
   blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor,   // keep the canvas opaque (three's context has alpha)
   vertexShader: /* glsl */`
     attribute vec3 p1; attribute vec3 p2; attribute vec3 p3; attribute vec3 p4; attribute vec3 p5; attribute vec3 aScatter; attribute float aRnd;
-    uniform float uTime, uFrom, uTo, uT, uIntro, uSize, uPR, uOpacity, uMouseK, uShockT, uSwirl, uPortrait;
+    uniform float uTime, uFrom, uTo, uT, uIntro, uSize, uPR, uOpacity, uMouseK, uShockT, uSwirl, uPortrait, uCycA, uCycB, uCycT;
     uniform vec3 uMouse, uShockPos;
     varying float vA;
     vec3 rotY(vec3 p, float a){ float c = cos(a), s = sin(a); return vec3(c*p.x + s*p.z, p.y, -s*p.x + c*p.z); }
     vec3 rotX(vec3 p, float a){ float c = cos(a), s = sin(a); return vec3(p.x, c*p.y - s*p.z, s*p.y + c*p.z); }
     vec3 rotZ(vec3 p, float a){ float c = cos(a), s = sin(a); return vec3(c*p.x - s*p.y, s*p.x + c*p.y, p.z); }
-    vec3 shape(float k){
+    vec3 base(float k){
       if (k < .5) return rotY(position * (1. + .02 * sin(uTime * .9 + aRnd * 40.)), uTime * .06);
       if (k < 1.5) return rotX(rotY(p1, -.55 + sin(uTime * .12) * .3), .18);
       if (k < 2.5) { vec3 q = p2; q.y += sin(q.x * .9 + uTime * .6) * .12; return rotY(q, -.25); }
       if (k < 3.5) return rotZ(rotX(rotY(p3, uTime * .09), 1.2), .32);
       if (k < 4.5) { vec3 w = p4; w.y += sin(w.x * 1.1 + uTime * .8) * .14 + cos(w.z * 1.6 + uTime * .6) * .09; return w; }
       return rotZ(rotX(p5, uTime * .32), .14 + uPortrait * 1.43);        // helix: spins on its axis; stands upright on tall screens
+    }
+    vec3 shape(float k){                                                 // 5 = the interlude: whatever pattern the cycle is on
+      if (k < 4.5) return base(k);
+      float lc = smoothstep(aRnd * .35, aRnd * .35 + .65, uCycT);
+      return mix(base(uCycA), base(uCycB), lc);
     }
     void main(){
       float lt = smoothstep(aRnd * .35, aRnd * .35 + .65, uT);            // each point leaves on its own delay
@@ -232,15 +239,34 @@ function toWorld(cx, cy, out) {
 }
 addEventListener('pointermove', e => { mouseIn = e.pointerType === 'mouse'; mx = e.clientX / innerWidth - .5; my = e.clientY / innerHeight - .5; toWorld(e.clientX, e.clientY, U.uMouse.value); }, { passive: true });
 addEventListener('pointerout', e => { if (!e.relatedTarget) mouseIn = false; });   // cursor left the window
-addEventListener('pointerdown', e => { if (reduce) return; toWorld(e.clientX, e.clientY, U.uShockPos.value); U.uShockT.value = 0; }, { passive: true });
+addEventListener('pointerdown', e => { toWorld(e.clientX, e.clientY, U.uShockPos.value); U.uShockT.value = 0; }, { passive: true });
 
 /* ---------- intro / outro, synced with the page veil ---------- */
-let introP = reduce ? 1 : 0, introDir = 0;
+let introP = 0, introDir = 0;
 addEventListener('veil:lifted', () => { introDir = 1; });
 setTimeout(() => { if (!introDir) introDir = 1; }, 1800);
 addEventListener('page:leave', () => { introDir = -1.6; });
 addEventListener('pageshow', e => { if (e.persisted) { introP = 1; introDir = 0; } });
 addEventListener('theme:change', () => { setTheme(); renderer.render(scene, camera); });   // draw the new look right away
+
+/* ---------- interlude: a new pattern every 4 s (2.2 s still, 1.8 s morph) ---------- */
+const CYCLE = [[6, 'helix'], [0, 'sphere'], [1, 'grid'], [2, 'ribbon']];
+const patIdx = secs.findIndex(s => +s.dataset.shape === 5);
+let ci = 0, hold = 0, morph = -1, announced = '';
+const announce = name => { if (name !== announced) { announced = name; dispatchEvent(new CustomEvent('pattern:change', { detail: name })); } };
+function stepCycle(dt) {
+  if (patIdx < 0) return;
+  const near = Math.abs(sCur - patIdx) < .6;
+  if (morph >= 0) {                                           // a morph always finishes, even if you scroll on
+    morph += dt / 1.8; U.uCycT.value = Math.min(1, morph);
+    if (morph >= 1) { ci = (ci + 1) % CYCLE.length; U.uCycA.value = U.uCycB.value = CYCLE[ci][0]; U.uCycT.value = 0; morph = -1; hold = 0; }
+    return;
+  }
+  if (!near) { hold = 0; return; }
+  announce(CYCLE[ci][1]);
+  hold += dt;
+  if (hold >= 2.2) { morph = 0; U.uCycB.value = CYCLE[(ci + 1) % CYCLE.length][0]; announce(CYCLE[(ci + 1) % CYCLE.length][1]); }
+}
 
 /* ---------- loop ---------- */
 const clock = new THREE.Clock();
@@ -248,9 +274,10 @@ let sCur = targetS(), first = true, rx = 0, ry = 0;
 const lerp = (a, b, t) => a + (b - a) * t;
 (function frame() {
   const dt = Math.min(.05, clock.getDelta());
-  U.uTime.value += reduce ? 0 : dt;
+  U.uTime.value += reduce ? dt * .5 : dt;                                // reduced motion: the same field, just calmer
   const sT = targetS();
-  sCur = reduce ? sT : sCur + (sT - sCur) * (1 - Math.pow(.02, dt));
+  sCur = sCur + (sT - sCur) * (1 - Math.pow(.02, dt));
+  stepCycle(dt);
   const last = Math.max(0, secs.length - 1), from = Math.min(Math.floor(sCur), Math.max(0, last - 1));
   const t = secs.length > 1 ? Math.min(1, Math.max(0, sCur - from)) : 0;
   U.uFrom.value = shapeOf(from); U.uTo.value = shapeOf(from + 1); U.uT.value = t;
@@ -267,11 +294,11 @@ const lerp = (a, b, t) => a + (b - a) * t;
   U.uOpacity.value = lerp(la[4], lb[4], e) * (portrait ? .7 : 1);
 
   if (introDir) { introP = Math.min(1, Math.max(0, introP + dt / 2.4 * introDir)); if (introP >= 1 && introDir > 0) introDir = 0; }
-  U.uIntro.value = reduce ? 1 : 1 - Math.pow(1 - introP, 3);
+  U.uIntro.value = 1 - Math.pow(1 - introP, 3);
 
-  U.uMouseK.value += ((fine && mouseIn && !reduce ? 1 : 0) - U.uMouseK.value) * .06;
+  U.uMouseK.value += ((fine && mouseIn ? 1 : 0) - U.uMouseK.value) * .06;
   if (U.uShockT.value >= 0) { U.uShockT.value += dt; if (U.uShockT.value > 3) U.uShockT.value = -1; }
-  rx += ((reduce ? 0 : my * .12) - rx) * .05; ry += ((reduce ? 0 : mx * .2) - ry) * .05;
+  rx += (my * .12 - rx) * .05; ry += (mx * .2 - ry) * .05;
   group.rotation.set(rx, ry, 0);
 
   renderer.render(scene, camera);

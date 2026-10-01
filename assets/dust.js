@@ -10,11 +10,10 @@
    3. Animate: one WebGL draw call; each grain starts on its own delay
       (earlier on the left), drifts right and up, swirls, fades.
    Dust.snap(roots, opts) → { T, play(from, to, ms), destroy() }
-   Dust.ok is false with reduced motion or without WebGL; callers then skip it.
+   Dust.ok is false without WebGL; callers then skip it (reduced motion only calms it, in ui.js).
 ------------------------------------------------------------------- */
 (() => {
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const test = !reduce && (() => { try { return !!document.createElement('canvas').getContext('webgl'); } catch { return false; } })();
+  const test = (() => { try { return !!document.createElement('canvas').getContext('webgl'); } catch { return false; } })();
 
   /* ---------- 1. rasterize ---------- */
   const px = v => parseFloat(v) || 0;

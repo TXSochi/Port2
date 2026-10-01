@@ -136,6 +136,13 @@ header nav{display:flex;align-items:center;gap:28px}
   .row-more:hover .more-track,.row-more:focus-visible .more-track{animation-play-state:running}
 }
 @media (min-width:1201px){.row-more .row-cat{grid-column:3/5}}
+/* Many more: a slow ticker that always moves; on hover the inverted band still slides in */
+.more-tick{display:block;min-width:0;overflow:hidden;white-space:nowrap;padding:.06em 0 .1em;-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 4%,#000 88%,transparent)}
+.tick-track{display:inline-flex;align-items:center;width:max-content;animation:marquee 32s linear infinite}
+.tk{display:inline-flex;align-items:center;gap:.35em;padding-right:.45em}
+.tk em{color:var(--muted)}
+.tk-star{font-size:.36em;opacity:.55}
+.row-more:hover .row-title.more-tick,.row-more:focus-visible .row-title.more-tick{transform:none}
 
 /* process */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(24px,3vw,48px);margin-top:56px}
@@ -254,7 +261,10 @@ footer.site a{color:var(--fg)}
 .quote em{font-style:italic}
 .qw{display:inline-block;white-space:nowrap}
 .qc{display:inline-block;will-change:transform,opacity,filter}
+.quote{pointer-events:none}   /* scattered letters must never sit on top of the work rows */
 .pattern-sub{max-width:40ch;margin:0;line-height:1.7}
+.pattern-sub [data-p]{transition:color .9s var(--ease)}
+.pattern-sub [data-p].on{color:var(--fg)}
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
 /* dust: the snap effect (dust.js) */
@@ -330,7 +340,8 @@ footer.site a{color:var(--fg)}
 }
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
-  .grain,.more-track{animation:none}
+  .grain{animation:none}
+  .tick-track{animation-duration:60s}
   .js [data-reveal] .line > span,.js [data-fade]{transform:none;opacity:1;transition:none}
   .js #veil{display:none}
 }
