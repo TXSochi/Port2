@@ -224,7 +224,7 @@ header nav{display:flex;align-items:center;gap:28px}
 .case-body .ph-line{color:var(--muted)}
 .modules{list-style:none;margin:0;padding:0;columns:2;column-gap:48px}
 .modules li{break-inside:avoid;display:flex;gap:18px;align-items:baseline;padding:14px 0;border-bottom:1px solid var(--line)}
-.modules li span{color:var(--muted);min-width:28px}
+.modules li > .mono{color:var(--muted);min-width:28px}
 .users{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
 .users div{border-top:1px solid var(--line-2);padding-top:14px}
 .users h3{font-family:var(--serif);font-weight:400;font-size:32px;margin:0 0 8px}
@@ -247,8 +247,8 @@ header nav{display:flex;align-items:center;gap:28px}
 .metrics strong{display:block;font-family:var(--serif);font-weight:400;font-size:clamp(44px,5vw,72px);line-height:1;margin-bottom:8px}
 .next{display:block;text-decoration:none;padding:clamp(80px,14vh,140px) var(--pad);border-top:1px solid var(--line);margin-top:80px}
 .next .next-title{display:flex;align-items:baseline;justify-content:space-between;gap:24px;font-family:var(--serif);font-size:clamp(52px,9vw,150px);line-height:.95;letter-spacing:-.02em;margin-top:18px}
-.next .next-title span:first-child{transition:transform .8s var(--ease)}
-.next:hover .next-title span:first-child{transform:translateX(24px)}
+.next .next-title > span:first-child{transition:transform .8s var(--ease)}
+.next:hover .next-title > span:first-child{transform:translateX(24px)}
 .next .arrow{font-family:var(--sans);font-size:clamp(28px,3vw,44px)}
 .next:hover .arrow{transform:translateX(8px)}
 footer.site{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;padding:24px var(--pad) 32px;border-top:1px solid var(--line);color:var(--muted)}
@@ -278,6 +278,13 @@ footer.site a{color:var(--fg)}
 .portrait.snapped img{opacity:0;transition:none}
 .portrait.snapped .snap-hint{opacity:0}
 .portrait[data-snap]:focus-visible{outline:1px solid var(--fg);outline-offset:8px}
+/* dust everywhere (ui.js): text split into words / letters, images hidden while they're dust */
+.dw,.dc{display:inline-block}
+.dw{white-space:nowrap}
+.dw-long{white-space:normal}
+.dust-text .line{overflow:visible}            /* the old slide-up mask would clip the drifting letters */
+@supports (overflow:clip){.dust-text main{overflow:clip}}   /* drifting grains never add scroll length; clip keeps sticky working */
+.dust-off{visibility:hidden}
 @media (max-width:760px){.pattern{height:180vh}}
 @media (max-width:599px){.can-dust .portrait[data-snap]{margin-bottom:44px}}
 
@@ -322,7 +329,7 @@ footer.site a{color:var(--fg)}
 @media (max-width:560px){
   .hero{padding-top:104px}
   .hero-top{justify-self:start;margin-top:0;gap:22px}
-  .hero-foot span:nth-child(2){display:none}
+  .hero-foot > span:nth-child(2){display:none}
   .name{font-size:clamp(64px,19vw,120px)}
   .huge{font-size:clamp(56px,16vw,96px)}
   .meta{grid-template-columns:1fr}
