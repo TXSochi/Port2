@@ -135,6 +135,9 @@ header nav{display:flex;align-items:center;gap:28px}
   .row-more:hover .more-band,.row-more:focus-visible .more-band{clip-path:inset(0 0 0 0)}
   .row-more:hover .more-track,.row-more:focus-visible .more-track{animation-play-state:running}
 }
+/* same hover band whenever a real mouse is in use (ui.js adds .has-mouse), e.g. on touchscreen laptops */
+.has-mouse .row-more:hover .more-band,.has-mouse .row-more:focus-visible .more-band{clip-path:inset(0 0 0 0)}
+.has-mouse .row-more:hover .more-track,.has-mouse .row-more:focus-visible .more-track{animation-play-state:running}
 @media (min-width:1201px){.row-more .row-cat{grid-column:3/5}}
 /* Many more: a slow ticker that always moves; on hover the inverted band still slides in */
 .more-tick{display:block;min-width:0;overflow:hidden;white-space:nowrap;padding:.06em 0 .1em;-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 4%,#000 88%,transparent)}

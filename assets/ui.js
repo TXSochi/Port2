@@ -9,7 +9,9 @@
 (() => {
   const root = document.documentElement;
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const fine = matchMedia('(pointer: fine)').matches;
+  // A mouse can exist even when the primary pointer is touch (touchscreen laptops, 2-in-1s): those
+  // report (pointer: coarse), so the cursor also switches on the moment a real mouse moves.
+  const fine = matchMedia('(pointer: fine)').matches || matchMedia('(any-pointer: fine)').matches;
   const safe = (name, fn) => { try { fn(); } catch (err) { console.warn('[ui] ' + name, err); } };
   const dustOK = () => !!(window.Dust && Dust.ok);
 
@@ -107,7 +109,13 @@
   })));
 
   /* ---------- mouse: custom cursor, magnetic links, work-row preview (mouse/trackpad only) ---------- */
-  if (fine) safe('cursor', () => {
+  let cursorOn = false;
+  const isMouse = e => e.pointerType === 'mouse' || e.pointerType === 'pen';
+  const startCursor = e0 => { if (cursorOn) return; cursorOn = true; safe('cursor', () => cursor(e0)); };
+  if (fine) startCursor();
+  addEventListener('pointermove', e => { if (isMouse(e)) startCursor(e); }, { passive: true });
+  function cursor(e0) {
+    root.classList.add('has-mouse');
     document.querySelectorAll('[data-magnetic]').forEach(m => {
       m.addEventListener('pointermove', e => {
         const r = m.getBoundingClientRect();
@@ -120,21 +128,24 @@
     const ring = document.createElement('div'); ring.className = 'c-ring'; ring.innerHTML = '<span></span>';
     const dot = document.createElement('div'); dot.className = 'c-dot';
     document.body.append(ring, dot);
-    let x = innerWidth / 2, y = innerHeight / 2, rx = x, ry = y, seen = false;
+    let x = e0 ? e0.clientX : innerWidth / 2, y = e0 ? e0.clientY : innerHeight / 2, rx = x, ry = y, seen = !!e0;
     addEventListener('pointermove', e => {
+      if (!isMouse(e)) return;
       x = e.clientX; y = e.clientY; dot.style.transform = `translate(${x}px,${y}px)`;
       if (!seen) { seen = true; rx = x; ry = y; }
       ring.classList.remove('c-hide'); dot.classList.remove('c-hide');
     }, { passive: true });
     addEventListener('pointerout', e => { if (!e.relatedTarget) { ring.classList.add('c-hide'); dot.classList.add('c-hide'); } });
-    document.addEventListener('pointerover', e => {
-      const t = e.target.closest('a,button,[data-cursor]');
+    const over = el => {
+      const t = el && el.closest && el.closest('a,button,[data-cursor]');
       const label = t && t.dataset.cursor;
       ring.classList.toggle('is-link', !!t && !label);
       ring.classList.toggle('is-view', !!label);
       ring.firstChild.textContent = label || '';
-    });
-    addEventListener('pointerdown', () => ring.classList.add('is-down'));
+    };
+    document.addEventListener('pointerover', e => over(e.target));
+    if (e0) over(e0.target);
+    addEventListener('pointerdown', e => { if (isMouse(e)) ring.classList.add('is-down'); else { ring.classList.add('c-hide'); dot.classList.add('c-hide'); } });
     addEventListener('pointerup', () => ring.classList.remove('is-down'));
 
     // work-row preview that trails the cursor
@@ -157,15 +168,15 @@
       im.src = src;
     }), 300);
     if (document.readyState === 'complete') preload(); else addEventListener('load', preload);
+    const enter = r => { if (!pv) return; hovered = r; fill(r); if (!on) { px = x; py = y; } on = true; pv.classList.add('on'); };
+    const leave = () => { hovered = null; on = false; pv && pv.classList.remove('on'); };
     rows.forEach(r => {
-      r.addEventListener('pointerenter', () => {
-        if (!pv) return;
-        hovered = r; fill(r);
-        if (!on) { px = x; py = y; }
-        on = true; pv.classList.add('on');
-      });
-      r.addEventListener('pointerleave', () => { hovered = null; on = false; pv && pv.classList.remove('on'); });
+      r.addEventListener('pointerenter', e => { if (isMouse(e)) enter(r); });
+      r.addEventListener('pointerleave', leave);
     });
+    // switched on by the first mouse move while already over a row: show that row's preview straight away
+    const r0 = e0 && e0.target && e0.target.closest && e0.target.closest('[data-preview]');
+    if (r0) enter(r0);
 
     (function loop() {
       rx += (x - rx) * .18; ry += (y - ry) * .18;
@@ -180,7 +191,7 @@
       }
       requestAnimationFrame(loop);
     })();
-  });
+  }
 
   /* ---------- about portrait: made of dust ----------
      It assembles from dust when it scrolls into view, snaps away when clicked (and flies back),

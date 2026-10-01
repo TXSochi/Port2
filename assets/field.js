@@ -17,7 +17,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 
 const canvas = document.getElementById('field');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const fine = matchMedia('(pointer: fine)').matches;
+const fine = matchMedia('(pointer: fine)').matches || matchMedia('(any-pointer: fine)').matches;
 const small = Math.min(innerWidth, innerHeight) < 600 || !fine;
 const COUNT = small ? 7000 : 15000;
 const THEMES = {
@@ -296,7 +296,7 @@ const lerp = (a, b, t) => a + (b - a) * t;
   if (introDir) { introP = Math.min(1, Math.max(0, introP + dt / 2.4 * introDir)); if (introP >= 1 && introDir > 0) introDir = 0; }
   U.uIntro.value = 1 - Math.pow(1 - introP, 3);
 
-  U.uMouseK.value += ((fine && mouseIn ? 1 : 0) - U.uMouseK.value) * .06;
+  U.uMouseK.value += ((mouseIn ? 1 : 0) - U.uMouseK.value) * .06;
   if (U.uShockT.value >= 0) { U.uShockT.value += dt; if (U.uShockT.value > 3) U.uShockT.value = -1; }
   rx += (my * .12 - rx) * .05; ry += (mx * .2 - ry) * .05;
   group.rotation.set(rx, ry, 0);
