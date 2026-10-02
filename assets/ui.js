@@ -303,19 +303,59 @@
     addEventListener('pattern:change', e => words.forEach(w => w.classList.toggle('on', w.dataset.p === e.detail)));
   });
 
+  /* ---------- WMS: site-visit slider — a deck of photos that advances on its own ---------- */
+  safe('site-slider', () => document.querySelectorAll('[data-site-slider]').forEach(box => {
+    const slides = [...box.querySelectorAll('.ss-slide')], bars = [...box.querySelectorAll('.ss-bar')], caps = [...box.querySelectorAll('.ss-caps li')];
+    const stage = box.querySelector('.site-stage'), N = slides.length, DUR = 4600;
+    if (N < 2) return;
+    box.style.setProperty('--ss-dur', DUR + 'ms');
+    slides.forEach(s => { const im = s.querySelector('img'); if (im) im.loading = 'eager'; });
+    let cur = 0, timer = 0, left = DUR, t0 = 0, hover = false, seen = false;
+    const paused = () => hover || !seen || document.hidden;
+    const show = k => {
+      cur = (k + N) % N;
+      slides.forEach((s, i) => { const d = (i - cur + N) % N; s.style.setProperty('--i', d); s.classList.toggle('on', d === 0); s.setAttribute('aria-hidden', d ? 'true' : 'false'); });
+      bars.forEach((b, i) => { b.classList.toggle('on', i === cur); b.classList.toggle('done', i < cur); b.querySelector('i').style.animation = 'none'; void b.offsetWidth; b.querySelector('i').style.animation = ''; });
+      caps.forEach((c, i) => c.classList.toggle('on', i === cur));
+      left = DUR; arm();
+    };
+    const arm = () => { clearTimeout(timer); box.classList.toggle('paused', paused()); if (!paused()) { t0 = performance.now(); timer = setTimeout(() => show(cur + 1), left); } };
+    const hold = () => { if (timer) { clearTimeout(timer); timer = 0; left = Math.max(300, left - (performance.now() - t0)); } box.classList.add('paused'); };
+    stage.addEventListener('click', () => show(cur + 1));
+    bars.forEach((b, i) => b.addEventListener('click', () => show(i)));
+    caps.forEach((c, i) => c.addEventListener('click', () => show(i)));
+    box.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { hover = true; hold(); } });
+    box.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') { hover = false; arm(); } });
+    let x0 = null;                                                   // swipe on touch screens
+    stage.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') x0 = e.clientX; });
+    stage.addEventListener('pointerup', e => { if (x0 === null) return; const dx = e.clientX - x0; x0 = null; if (Math.abs(dx) > 40) { e.preventDefault(); show(cur + (dx < 0 ? 1 : -1)); } });
+    document.addEventListener('visibilitychange', () => document.hidden ? hold() : arm());
+    if ('IntersectionObserver' in window) new IntersectionObserver(([en]) => { seen = en.isIntersecting; seen ? arm() : hold(); }, { threshold: .35 }).observe(box);
+    else seen = true;
+    show(0);
+  }));
+
+  /* ---------- WMS: the flowchart draws itself in order when it scrolls into view ---------- */
+  safe('flowchart', () => {
+    const svg = document.querySelector('.fc-svg'); if (!svg) return;
+    if (!('IntersectionObserver' in window)) { svg.classList.add('in'); return; }
+    const io = new IntersectionObserver(([en]) => { if (en.isIntersecting) { svg.classList.add('in'); io.disconnect(); } }, { threshold: .3 });
+    io.observe(svg);
+  });
+
   /* ---------- dust everywhere ----------
      Text: every text block in <main> drifts in as dust at the bottom edge of the screen and blows
      away at the top edge (scroll-scrubbed, like the quote); what's on screen at first visit
      assembles right after the veil lifts. Big type goes letter by letter, the rest word by word.
      Images on case pages (cover + gallery) assemble from dust when they scroll in and turn to dust
      when they leave. Nothing else about the layout or styles changes. */
-  const OBJ = '.cover, .gallery .ph';
+  const OBJ = '.cover, .gallery .ph, .site-stage';
   const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
   const afterLift = () => new Promise(r => { if (lifted) r(); else addEventListener('veil:lifted', () => r(), { once: true }); });
   let objectsOn = false;
 
   safe('dust-objects', () => {
-    const els = [...document.querySelectorAll('main .cover, main .gallery .ph')];
+    const els = [...document.querySelectorAll('main .cover, main .gallery .ph, main .site-stage')];
     if (!els.length || !dustOK() || !('IntersectionObserver' in window)) return;
     objectsOn = true;
     const cap = fine ? 3 : 2; let running = 0;
@@ -428,7 +468,8 @@
       const rs = [...near].map(blk => [blk, blk.b.getBoundingClientRect()]);   // read everything, then write
       for (const [blk, r] of rs) {
         if (!r.width && !r.height) continue;
-        const pe = Math.min(g, clamp01((vh - r.top) / Math.max(1, Math.min(vh * .24, vh - r.top + rem))));  // in at the bottom edge
+        if (blk.pin && (r.bottom < 0 || r.top > vh)) blk.pin = false;                                        // the first-visit pass ends once it leaves
+        const pe = Math.min(g, Math.max(blk.pin ? 1 : 0, clamp01((vh - r.top) / Math.max(1, Math.min(vh * .24, vh - r.top + rem)))));  // in at the bottom edge
         const pl = clamp01(r.bottom / Math.max(1, Math.min(vh * .2, r.bottom + sy)));                       // out at the top edge
         paint(blk, pe, pl);
       }
@@ -442,6 +483,6 @@
     blocks.forEach((blk, b) => io.observe(b));
     addEventListener('scroll', kick, { passive: true });
     addEventListener('resize', kick);
-    afterLift().then(() => { g0 = performance.now(); kick(); });
+    afterLift().then(() => { blocks.forEach(blk => { const r = blk.b.getBoundingClientRect(); blk.pin = scrollY < 40 && r.top < innerHeight && r.bottom > 0; }); g0 = performance.now(); kick(); });
   });
 })();
