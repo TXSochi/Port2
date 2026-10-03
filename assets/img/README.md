@@ -28,3 +28,17 @@ Nama yang tampil di website sudah diganti (WMS System, E-Health PWA, AI Teleprom
 | `<slug>-3.jpg` `<slug>-4.jpg` `<slug>-5.jpg` | 1080 × 1680 | 9:14 | Galeri: layar HP. Taruh screen di atas background, jangan pakai screenshot mentah (layar HP lebih panjang dari 9:14, jadi akan terpotong) |
 
 Contoh: cover Onebunda = `onebunda-cover.jpg`, thumbnail Paragon WMS = `paragon-wms-thumb.jpg`.
+
+## Halaman dengan layout khusus
+
+WMS System dan E-Health PWA tidak memakai galeri `<slug>-1..5.jpg` di atas, tapi file berikut:
+
+| Nama file | Ukuran (px) | Muncul di |
+|---|---|---|
+| `paragon-wms-cover.webp` | 2400 × 1200 | Cover halaman WMS System |
+| `wms-site-1.jpg` … `wms-site-4.jpg` | foto landscape | Slider otomatis *On the floor* (foto site visit) |
+| `wms-dashboard.webp` | 1600 × 1471, background transparan | *Screens* WMS: mockup desktop |
+| `wms-mobile-1.webp` … `wms-mobile-5.webp` | 780 × 1680, background transparan | *Screens* WMS: mockup HP |
+| `ehealth-mobile-1.webp` … `ehealth-mobile-8.webp` | 780 × 1680, background transparan | *Screens* E-Health PWA: 8 mockup HP (2 baris × 4) |
+
+Cover dan thumbnail E-Health PWA tetap `onebunda-cover.jpg` dan `onebunda-thumb.jpg`. File `onebunda-1.jpg` … `onebunda-5.jpg` sekarang tidak dipakai lagi di Port2 dan boleh dibiarkan.

@@ -325,6 +325,18 @@ footer.site a{color:var(--fg)}
 .fl-kids > span{border:1px solid var(--line-2);border-radius:999px;padding:6px 12px;font-size:13px}
 .fl-kids > span:last-child{border-style:dashed}
 @media (max-width:1099px){.fc-svg{display:none}.flow-list{display:block}}
+/* E-Health PWA: chips that aren't a "more" chip stay solid; pain-point cards; metrics with a line of context */
+.fl-kids.plain > span:last-child{border-style:solid}
+.users.pains{margin-top:28px}
+.metrics.eh{grid-template-columns:1fr;gap:0}
+.metrics.eh > div{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1fr);gap:6px 28px;align-items:center;padding:22px 0 24px}
+.metrics.eh > div > .mono{align-self:end}
+.metrics.eh > div > p{align-self:start}
+.metrics.eh > div:last-child{border-bottom:1px solid var(--line-2)}
+.metrics.eh > div > strong{grid-row:span 2;margin:0;font-size:clamp(44px,4.6vw,68px);white-space:nowrap}
+.metrics.eh > div > .mono{color:var(--fg)}
+.metrics.eh > div > p{margin:0;color:var(--muted);font-size:16px;line-height:1.55}
+@media (max-width:640px){.metrics.eh > div{grid-template-columns:1fr}.metrics.eh > div > strong{grid-row:auto;margin-bottom:4px}}
 
 /* ---------- WMS case page: site-visit slider ---------- */
 .site-wrap{padding:0 var(--pad) 40px}
