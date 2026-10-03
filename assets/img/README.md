@@ -40,5 +40,9 @@ WMS System dan E-Health PWA tidak memakai galeri `<slug>-1..5.jpg` di atas, tapi
 | `wms-dashboard.webp` | 1600 × 1471, background transparan | *Screens* WMS: mockup desktop |
 | `wms-mobile-1.webp` … `wms-mobile-5.webp` | 780 × 1680, background transparan | *Screens* WMS: mockup HP |
 | `ehealth-mobile-1.webp` … `ehealth-mobile-8.webp` | 780 × 1680, background transparan | *Screens* E-Health PWA: 8 mockup HP (2 baris × 4) |
+| `facethecamera-cover.jpg` | 2400 × 1200 | Cover halaman AI Teleprompter |
+| `facethecamera-desktop.webp` | 1600 × 896, background transparan | *Screens* AI Teleprompter: mockup desktop (landing page) |
+| `facethecamera-mobile-1.webp` … `facethecamera-mobile-6.webp` | lebar 780, background transparan | *Screens* AI Teleprompter: 6 mockup HP |
+| `b2b-mobile-1.webp` … `b2b-mobile-6.webp` | lebar 780, background transparan | *Screens* B2B Supply Chain: 6 mockup HP (halaman ini tanpa cover) |
 
-Cover dan thumbnail E-Health PWA tetap `onebunda-cover.jpg` dan `onebunda-thumb.jpg`. File `onebunda-1.jpg` … `onebunda-5.jpg` sekarang tidak dipakai lagi di Port2 dan boleh dibiarkan.
+Cover dan thumbnail E-Health PWA tetap `onebunda-cover.jpg` dan `onebunda-thumb.jpg`. Thumbnail hover di Home sekarang tampil berwarna. File `<slug>-1.jpg` … `<slug>-5.jpg` dan `b2b-supply-chain-cover.jpg` sekarang tidak dipakai lagi di Port2 dan boleh dibiarkan.

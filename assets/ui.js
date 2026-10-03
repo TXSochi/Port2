@@ -337,11 +337,27 @@
 
   /* ---------- WMS: the flowchart draws itself in order when it scrolls into view ---------- */
   safe('flowchart', () => {
-    const svg = document.querySelector('.fc-svg'); if (!svg) return;
-    if (!('IntersectionObserver' in window)) { svg.classList.add('in'); return; }
-    const io = new IntersectionObserver(([en]) => { if (en.isIntersecting) { svg.classList.add('in'); io.disconnect(); } }, { threshold: .3 });
-    io.observe(svg);
+    // every flowchart (and any [data-inview] block, e.g. the design-thinking loop) starts animating once it is on screen
+    const els = document.querySelectorAll('.fc-svg, [data-inview]'); if (!els.length) return;
+    if (!('IntersectionObserver' in window)) { els.forEach(e => e.classList.add('in')); return; }
+    const io = new IntersectionObserver(ens => ens.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } }), { threshold: .25 });
+    els.forEach(e => io.observe(e));
   });
+
+  /* ---------- Figma prototypes: load the embed only when the visitor asks (it is heavy) ---------- */
+  safe('prototype', () => document.querySelectorAll('[data-proto]').forEach(box => {
+    const btn = box.querySelector('.proto-load'), stage = box.querySelector('.proto-stage'); if (!btn || !stage) return;
+    btn.addEventListener('click', () => {
+      if (box.classList.contains('is-live')) return;
+      const f = document.createElement('iframe');
+      f.title = box.dataset.title || 'Interactive prototype'; f.allow = 'fullscreen; clipboard-write'; f.allowFullscreen = true;
+      f.referrerPolicy = 'strict-origin-when-cross-origin';
+      f.addEventListener('load', () => box.classList.add('is-loaded'), { once: true });
+      // the page's custom cursor can't follow the mouse inside the iframe, so hide it there
+      f.addEventListener('pointerenter', () => document.querySelectorAll('.c-ring,.c-dot').forEach(e => e.classList.add('c-hide')));
+      f.src = box.dataset.src; stage.append(f); box.classList.add('is-live');
+    });
+  }));
 
   /* ---------- dust everywhere ----------
      Text: every text block in <main> drifts in as dust at the bottom edge of the screen and blows
