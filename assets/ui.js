@@ -8,6 +8,7 @@
    instead of switching the effects off. */
 (() => {
   const root = document.documentElement;
+  const ID = root.lang === 'id';
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
   // A mouse can exist even when the primary pointer is touch (touchscreen laptops, 2-in-1s): those
   // report (pointer: coarse), so the cursor also switches on the moment a real mouse moves.
@@ -103,10 +104,17 @@
   /* ---------- copy email ---------- */
   safe('copy', () => document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
     const txt = b.dataset.copy, label = b.textContent;
-    try { await navigator.clipboard.writeText(txt); b.textContent = 'Copied ✓'; }
+    try { await navigator.clipboard.writeText(txt); b.textContent = ID ? 'Tersalin ✓' : 'Copied ✓'; }
     catch { b.textContent = txt; }
     setTimeout(() => { b.textContent = label; }, 1600);
   })));
+
+  /* ---------- EN / ID: the switch keeps the current #section ---------- */
+  safe('lang', () => {
+    const links = document.querySelectorAll('.lang a[hreflang]');
+    const sync = () => links.forEach(a => { a.href = a.href.split('#')[0] + location.hash; });
+    sync(); addEventListener('hashchange', sync);
+  });
 
   /* ---------- mouse: custom cursor, magnetic links, work-row preview (mouse/trackpad only) ---------- */
   let cursorOn = false;
@@ -200,8 +208,8 @@
     const fig = document.querySelector('.portrait[data-snap]');
     if (!fig || !dustOK() || !('IntersectionObserver' in window)) return;
     fig.removeAttribute('data-fade');                              // the dust does the reveal
-    const hint = fig.querySelector('.snap-hint'); if (hint && !fine) hint.textContent = 'Tap to snap ✦';
-    fig.tabIndex = 0; fig.setAttribute('role', 'button'); fig.setAttribute('aria-label', 'Snap the portrait into dust');
+    const hint = fig.querySelector('.snap-hint'); if (hint && !fine) hint.textContent = ID ? 'Ketuk untuk snap ✦' : 'Tap to snap ✦';
+    fig.tabIndex = 0; fig.setAttribute('role', 'button'); fig.setAttribute('aria-label', ID ? 'Ubah foto jadi debu' : 'Snap the portrait into dust');
     fig.classList.add('snapped');                                  // starts as (invisible) dust
     let state = 'hidden', want = false;
     const wait = ms => new Promise(r => setTimeout(r, ms));

@@ -620,3 +620,49 @@ footer.site a{color:var(--fg)}
   .sm-cols{grid-template-columns:1fr}
   .persona-id dl{grid-template-columns:1fr 1fr}
 }
+
+/* ================= 4 Oct 2026: Outcome band — the results, right under the hero, on an inverted panel ================= */
+.oh{padding:0 var(--pad);margin-top:clamp(56px,8vw,96px)}
+.oh-in{position:relative;overflow:hidden;border-radius:28px;background:var(--fg);color:var(--bg);padding:clamp(28px,5vw,72px);
+  --ink-2:rgba(var(--bg-rgb),.66);--rule:rgba(var(--bg-rgb),.2)}
+.oh-in::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.55;
+  background:radial-gradient(60% 80% at 100% 0%,rgba(var(--bg-rgb),.10),transparent 70%),
+             repeating-linear-gradient(90deg,var(--rule) 0 1px,transparent 1px 72px);
+  -webkit-mask-image:linear-gradient(180deg,#000,transparent 70%);mask-image:linear-gradient(180deg,#000,transparent 70%)}
+.oh-head{position:relative;display:grid;grid-template-columns:minmax(150px,1fr) 3.2fr;gap:20px 32px;align-items:start;margin-bottom:clamp(36px,5vw,64px)}
+.oh-tag{display:inline-flex;align-items:center;gap:10px;padding:8px 14px 8px 12px;border:1px solid var(--rule);border-radius:999px;justify-self:start;margin-top:8px}
+.oh-tag i{width:8px;height:8px;border-radius:50%;background:var(--bg);box-shadow:0 0 0 0 rgba(var(--bg-rgb),.5);animation:ohping 2.2s ease-out infinite}
+@keyframes ohping{0%{box-shadow:0 0 0 0 rgba(var(--bg-rgb),.45)}70%,100%{box-shadow:0 0 0 10px rgba(var(--bg-rgb),0)}}
+.oh-lead{font-family:var(--serif);font-weight:400;font-size:clamp(36px,4.6vw,72px);line-height:1.02;letter-spacing:-.015em;margin:0;max-width:20ch}
+.oh-grid{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 clamp(20px,3vw,44px)}
+.oh-item{border-top:1px solid var(--rule);padding-top:20px}
+.oh-item > strong{display:block;font-family:var(--serif);font-weight:400;font-size:clamp(60px,7.4vw,120px);line-height:.92;letter-spacing:-.02em;margin:0 0 14px}
+.oh-item > h3{margin:0 0 10px;font-family:var(--serif);font-weight:400;font-size:clamp(26px,2.4vw,36px);line-height:1.08}
+.oh-item.is-num > h3{font-family:var(--mono);font-size:12px;letter-spacing:.06em;line-height:1.4}
+.oh-item > p{margin:0;color:var(--ink-2);font-size:16px;line-height:1.6}
+.oh-i{display:block;color:var(--ink-2);margin-bottom:22px}
+.oh-extra{position:relative;margin-top:clamp(32px,4vw,52px);padding-top:clamp(22px,3vw,32px);border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px 32px}
+.oh-extra > p{margin:0;max-width:56ch;font-size:clamp(17px,1.35vw,20px);line-height:1.55}
+.oh-extra > .mono{color:var(--ink-2)}
+.oh-extra .three{margin:0}
+.oh-extra .three b,.oh-extra .three > i{color:var(--ink-2)}
+.oh-extra .checks{margin:0}
+.oh-extra .checks li{border-color:var(--rule)}
+@media (max-width:900px){
+  .oh-head{grid-template-columns:1fr}
+  .oh-tag{margin-top:0}
+  .oh-grid{grid-template-columns:1fr}
+  .oh-item{padding:20px 0 26px}
+  .oh-item > strong{font-size:clamp(56px,16vw,96px)}
+}
+@media (max-width:560px){.oh-in{border-radius:20px}}
+
+/* ================= 4 Oct 2026: EN / ID language switch (header on ≥561px, footer everywhere) ================= */
+.lang{display:inline-flex;align-items:center;gap:2px;padding:3px;border:1px solid var(--line-2);border-radius:999px;line-height:1}
+.lang a{display:block;padding:9px 10px;border-radius:999px;text-decoration:none;color:var(--muted);transition:color .3s,background .3s}
+.lang a:hover{color:var(--fg)}
+.lang a[aria-current]{background:var(--fg);color:var(--bg)}
+footer.site .lang,.foot .lang{padding:2px}
+footer.site .lang a,.foot .lang a{padding:6px 9px;color:var(--muted)}
+footer.site .lang a[aria-current],.foot .lang a[aria-current]{color:var(--bg)}
+@media (max-width:560px){header.site .lang-head{display:none}}
