@@ -666,3 +666,8 @@ footer.site .lang,.foot .lang{padding:2px}
 footer.site .lang a,.foot .lang a{padding:6px 9px;color:var(--muted)}
 footer.site .lang a[aria-current],.foot .lang a[aria-current]{color:var(--bg)}
 @media (max-width:560px){header.site .lang-head{display:none}}
+
+/* E-Health outcome: press sources under the metrics */
+.oh-src{font-size:15px!important;color:var(--ink-2)}
+.oh-src a{color:var(--bg);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;white-space:nowrap}
+.oh-src a:hover{text-decoration-thickness:2px}
