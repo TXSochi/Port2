@@ -46,3 +46,13 @@ WMS System dan E-Health PWA tidak memakai galeri `<slug>-1..5.jpg` di atas, tapi
 | `b2b-mobile-1.webp` … `b2b-mobile-6.webp` | lebar 780, background transparan | *Screens* B2B Supply Chain: 6 mockup HP (halaman ini tanpa cover) |
 
 Cover dan thumbnail E-Health PWA tetap `onebunda-cover.jpg` dan `onebunda-thumb.jpg`. Thumbnail hover di Home sekarang tampil berwarna. File `<slug>-1.jpg` … `<slug>-5.jpg` dan `b2b-supply-chain-cover.jpg` sekarang tidak dipakai lagi di Port2 dan boleh dibiarkan.
+
+## ECO Receipt (case/eco-receipt.html)
+
+| Nama file | Ukuran (px) | Muncul di |
+|---|---|---|
+| `eco-receipt-thumb.jpg` | 800 × 600 | Preview hover di *Selected work* |
+| `eco-receipt-cover.jpg` | 2400 × 1200 | Cover halaman case |
+| `eco-receipt-desktop.webp` | 1600 × 1000 | *Screens*: layar desktop |
+| `eco-receipt-mobile-1.webp` … `-9.webp` | 780 × 1688 | *Screens*: layar HP (screenshot asli, mode Demo) |
+| `eco-receipt-rc-<bahasa>.webp` | 600 × 800 | *Any receipt, many languages*: contoh struk (jp, kr, th, ar, hi, de, vi, id) |
